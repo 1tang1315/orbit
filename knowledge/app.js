@@ -206,8 +206,11 @@ function renderFeed() {
 $("#feedList").addEventListener("click", (e) => {
   const item = e.target.closest("[data-feed]");
   if (!item) return;
+  const f = state.feed.find((x) => x.id === item.dataset.feed);
   currentPid = item.dataset.pid;
-  detailTab = "overview";
+  const kind = f ? f.kind : "commit";
+  detailTab =
+    kind === "draft" ? "docs" : kind === "task" ? "tasks" : kind === "commit" ? "commits" : "overview";
   showNav("detail");
 });
 
@@ -275,28 +278,33 @@ function overviewHTML(p) {
   const confirmed = p.docs.filter((d) => d.status === "confirmed").length;
   const drafts = draftCount(p);
   return `
+  <div class="hint-bar">闭环：看板任务 → 写复盘 → 确认 L2 → 提炼 L3。各步均可点击右侧「今日闭环」或下方图层。</div>
   <div class="ov-grid">
-    <div class="ov-card"><div class="label">L1 结构模块</div><div class="value">${p.l1.structure}</div><div class="hint">自动生成</div></div>
-    <div class="ov-card"><div class="label">依赖</div><div class="value">${p.l1.deps}</div><div class="hint">清单已解析</div></div>
-    <div class="ov-card"><div class="label">已确认文档</div><div class="value">${confirmed}</div><div class="hint">L2</div></div>
-    <div class="ov-card"><div class="label">待确认草稿</div><div class="value">${drafts}</div><div class="hint">需你点确认</div></div>
+    <div class="ov-card clickable" data-ovtab="arch"><div class="label">L1 结构模块</div><div class="value">${p.l1.structure}</div><div class="hint">自动生成 → 架构</div></div>
+    <div class="ov-card clickable" data-ovtab="arch"><div class="label">依赖</div><div class="value">${p.l1.deps}</div><div class="hint">清单已解析 → 架构</div></div>
+    <div class="ov-card clickable" data-ovtab="docs"><div class="label">已确认文档</div><div class="value">${confirmed}</div><div class="hint">L2 → 文档</div></div>
+    <div class="ov-card clickable" data-ovtab="docs"><div class="label">待确认草稿</div><div class="value">${drafts}</div><div class="hint">需确认 → 文档</div></div>
   </div>
   <div class="layer-map">
-    <h3>三层知识在本项目</h3>
-    <div class="layer-row">
+    <h3>三层知识在本项目（点击切换 Tab）</h3>
+    <div class="layer-row clickable" data-ovtab="commits">
       <span class="layer-tag l1">L1</span>
-      <div class="layer-body">目录树 · 依赖 ${p.l1.deps} 项 · README ${p.l1.readme ? "有" : "无"} · 近期提交 ${p.commits.length} 条展示</div>
+      <div class="layer-body">目录树 · 依赖 ${p.l1.deps} 项 · README ${p.l1.readme ? "有" : "无"} · 提交与架构 → 点击查看</div>
     </div>
-    <div class="layer-row">
+    <div class="layer-row clickable" data-ovtab="docs">
       <span class="layer-tag l2">L2</span>
-      <div class="layer-body">${p.docs.map((d) => esc(d.title) + (d.status === "draft" ? "（草稿）" : "")).join("；") || "暂无"}</div>
+      <div class="layer-body">${p.docs.map((d) => esc(d.title) + (d.status === "draft" ? "（草稿）" : "")).join("；") || "暂无"} → 点击文档</div>
     </div>
-    <div class="layer-row">
+    <div class="layer-row clickable" data-ovtab="know">
       <span class="layer-tag l3">L3</span>
       <div class="layer-body">${p.knowledge.map((id) => {
         const k = state.l3.find((x) => x.id === id);
         return k ? esc(k.title) : "";
-      }).join("；") || "尚未提炼跨项目条目"}</div>
+      }).join("；") || "尚未提炼跨项目条目"} → 点击知识</div>
+    </div>
+    <div class="layer-row clickable" data-ovtab="tasks">
+      <span class="layer-tag l1" style="background:#fff7ed;color:#d97706">任务</span>
+      <div class="layer-body">${openTaskCount(p)} 项未完成 → 点击看板 / 写复盘</div>
     </div>
   </div>`;
 }
@@ -356,16 +364,23 @@ function docsHTML(p) {
 }
 
 $("#detailBody").addEventListener("click", (e) => {
+  const ov = e.target.closest("[data-ovtab]");
+  if (ov) {
+    detailTab = ov.dataset.ovtab;
+    renderDetail();
+    return;
+  }
   const btn = e.target.closest("[data-doc-confirm]");
-  if (!btn) return;
-  const p = project(currentPid);
-  const doc = p.docs.find((d) => d.id === btn.dataset.docConfirm);
-  if (doc) {
-    doc.status = "confirmed";
-    doc.updated = "刚刚";
-    save();
-    renderAll();
-    toast("已确认 → L2");
+  if (btn) {
+    const p = project(currentPid);
+    const doc = p.docs.find((d) => d.id === btn.dataset.docConfirm);
+    if (doc) {
+      doc.status = "confirmed";
+      doc.updated = "刚刚";
+      save();
+      renderAll();
+      toast("已确认 → L2");
+    }
   }
 });
 
@@ -503,16 +518,26 @@ function renderL3() {
   $("#l3Grid").innerHTML = items
     .map(
       (k) => `
-    <div class="k-card">
+    <div class="k-card clickable" data-kopen="${esc(k.from.split(",")[0].trim())}" title="打开来源项目">
       <span class="k-type">${esc(k.kind)}</span>
       <h3>${esc(k.title)}</h3>
       <p>${esc(k.body)}</p>
-      <div class="src">来源项目：${esc(k.from)}</div>
+      <div class="src">来源项目：${esc(k.from)} → 点击打开</div>
     </div>`
     )
     .join("");
   $$("#l3Filters .pill").forEach((p) => p.classList.toggle("active", p.dataset.l3 === f));
 }
+
+$("#l3Grid").addEventListener("click", (e) => {
+  const card = e.target.closest("[data-kopen]");
+  if (!card) return;
+  const pid = card.dataset.kopen;
+  if (!state.projects.some((p) => p.id === pid)) return;
+  currentPid = pid;
+  detailTab = "know";
+  showNav("detail");
+});
 
 $("#l3Filters").addEventListener("click", (e) => {
   const p = e.target.closest("[data-l3]");
@@ -586,8 +611,37 @@ $("#btnConfirmDoc").addEventListener("click", () => {
   });
   save();
   $("#confirmSheet").hidden = true;
-  renderAll();
-  toast("已写入 L2");
+  currentPid = d.pid;
+  detailTab = "docs";
+  showNav("detail");
+  toast("已写入 L2 → 项目文档");
+});
+
+/* Flywheel shortcuts in context rail */
+$$(".fly-link").forEach((btn) => {
+  btn.addEventListener("click", () => {
+    const fly = btn.dataset.fly;
+    if (fly === "board") {
+      showNav("board");
+    } else if (fly === "docs") {
+      const first = state.pending[0];
+      if (first) {
+        currentPid = first.pid;
+        detailTab = "docs";
+        showNav("detail");
+      } else {
+        showNav("projects");
+        toast("没有待确认草稿，先去项目里新建");
+      }
+    } else if (fly === "l3") {
+      showNav("knowledge");
+    } else if (fly === "retro") {
+      const p = project(state.boardPid || currentPid);
+      const done = p.tasks.find((t) => t.status === "done");
+      openDraftSheet(p.id, "复盘", done ? `复盘：${done.title}` : "复盘：");
+      if (!done) toast("先在看板把任务推到完成，再回来写复盘");
+    }
+  });
 });
 
 /* Draft sheet */

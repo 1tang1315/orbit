@@ -25,6 +25,7 @@
         <button type="button" class="side-item" data-nav="board">看板</button>
         <button type="button" class="side-item" data-nav="knowledge">知识 L3</button>
         <button type="button" class="side-item" data-nav="settings">设置</button>
+        <a class="side-item side-link" href="../index.html">← 回到 Orbit 主端</a>
       </nav>
       <div class="side-foot">
         <div class="layer-legend">
@@ -135,16 +136,17 @@
         <button type="button" class="bnav" data-nav="knowledge">知识</button>
         <button type="button" class="bnav" data-nav="settings">设置</button>
       </nav>
+      <a class="mobile-orbit-link" href="../index.html">Orbit 主端 →</a>
     </div>
 
     <aside class="context" id="contextPanel">
       <div class="ctx-block">
-        <h3>今日闭环</h3>
+        <h3>今日闭环（可点）</h3>
         <ol class="flywheel">
-          <li>任务来自 issue / 手动 / 规划</li>
-          <li>看板执行（接会话/PR）</li>
-          <li>完成后写复盘 → L2</li>
-          <li>提炼进 L3 反哺规划</li>
+          <li><button type="button" class="fly-link" data-fly="board">① 看板执行任务</button></li>
+          <li><button type="button" class="fly-link" data-fly="retro">② 完成 → 写复盘 L2</button></li>
+          <li><button type="button" class="fly-link" data-fly="docs">③ 草稿确认落盘</button></li>
+          <li><button type="button" class="fly-link" data-fly="l3">④ 提炼 L3 反哺</button></li>
         </ol>
       </div>
       <div class="ctx-block">
