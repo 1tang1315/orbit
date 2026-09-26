@@ -1,0 +1,208 @@
+<!-- AI生成 -->
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>轨道 Orbit · V1 原型</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+<p data-aigc-mark="1" style="margin:0 0 8px;font-size:10px;line-height:1.3;color:#6b6560;font-weight:400;">AI生成</p>
+
+  <div class="shell">
+    <!-- 左侧：说明（宽屏显示） -->
+    <aside class="side">
+      <div class="side-brand">
+        <span class="dot"></span>
+        轨道 Orbit
+      </div>
+      <p class="side-tagline">生活里工作、学习、待办等各条轨道，围绕同一中心运转。</p>
+      <ul class="side-points">
+        <li><strong>中心是今天</strong>：首屏只回答「现在该做什么」</li>
+        <li><strong>V1 焦点</strong>：待办 · 日计划 · 提醒 · 小组件</li>
+        <li><strong>本地优先</strong>：数据在本机，JSON 可导出</li>
+        <li><strong>轨道可扩展</strong>：工作 / 学习 / 生活</li>
+      </ul>
+      <p class="side-note">此页为交互原型（localStorage），对应 <code>docs/PRODUCT.md</code> V1 边界。非 Flutter 产物。</p>
+      <div class="side-widget" id="sideWidget" aria-label="今日小组件示意"></div>
+    </aside>
+
+    <!-- 中间：手机壳 -->
+    <div class="device">
+      <div class="device-notch"></div>
+      <div class="device-screen">
+        <header class="app-header">
+          <div>
+            <div class="app-eyebrow" id="dateLine">—</div>
+            <h1 class="app-title" id="viewTitle">今天</h1>
+          </div>
+          <div class="header-actions">
+            <button type="button" class="icon-btn" id="btnExport" title="导出 JSON" aria-label="导出 JSON">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg>
+            </button>
+            <button type="button" class="icon-btn primary" id="btnAdd" title="新建待办" aria-label="新建待办">+</button>
+          </div>
+        </header>
+
+        <main class="app-main" id="main">
+          <!-- Today -->
+          <section class="view active" data-view="today" id="view-today">
+            <div class="hero-card">
+              <div class="hero-left">
+                <div class="hero-label">今日轨道</div>
+                <div class="hero-count"><span id="openCount">0</span> 项未完成</div>
+                <div class="hero-sub" id="heroSub">添加一条待办，开始今天</div>
+              </div>
+              <div class="hero-ring" aria-hidden="true">
+                <svg viewBox="0 0 72 72" width="72" height="72">
+                  <circle cx="36" cy="36" r="30" class="ring-bg"></circle>
+                  <circle cx="36" cy="36" r="30" class="ring-fg" id="ringFg"></circle>
+                </svg>
+                <span id="ringPct">0%</span>
+              </div>
+            </div>
+
+            <div class="section-head">
+              <h2>今日待办</h2>
+              <span class="chip" id="todayChip">0</span>
+            </div>
+            <ul class="todo-list" id="todayTodos"></ul>
+            <div class="empty" id="todayEmpty" hidden>今天还没有待办。</div>
+
+            <div class="section-head mt">
+              <h2>日计划</h2>
+              <button type="button" class="link-btn" data-goto="plan">查看全部</button>
+            </div>
+            <div class="plan-mini" id="todayPlan"></div>
+          </section>
+
+          <!-- Plan -->
+          <section class="view" data-view="plan" id="view-plan">
+            <div class="day-strip" id="dayStrip"></div>
+            <div class="section-head">
+              <h2>时间块</h2>
+              <button type="button" class="link-btn" id="btnAddPlan">+ 计划</button>
+            </div>
+            <div class="plan-list" id="planList"></div>
+            <div class="empty" id="planEmpty" hidden>这一天还没有安排。</div>
+          </section>
+
+          <!-- Todos all -->
+          <section class="view" data-view="todos" id="view-todos">
+            <div class="filter-row" id="filterRow">
+              <button type="button" class="pill active" data-filter="all">全部</button>
+              <button type="button" class="pill" data-filter="open">未完成</button>
+              <button type="button" class="pill" data-filter="done">已完成</button>
+              <button type="button" class="pill" data-filter="work">工作</button>
+              <button type="button" class="pill" data-filter="study">学习</button>
+              <button type="button" class="pill" data-filter="life">生活</button>
+            </div>
+            <ul class="todo-list" id="allTodos"></ul>
+            <div class="empty" id="allEmpty" hidden>没有匹配的待办。</div>
+          </section>
+
+          <!-- Settings -->
+          <section class="view" data-view="settings" id="view-settings">
+            <div class="section-head"><h2>轨道分类</h2></div>
+            <div class="cat-grid" id="catGrid"></div>
+
+            <div class="section-head mt"><h2>数据</h2></div>
+            <div class="stack">
+              <button type="button" class="btn block" id="btnExport2">导出 JSON 全量</button>
+              <button type="button" class="btn block danger" id="btnReset">重置演示数据</button>
+            </div>
+
+            <div class="section-head mt"><h2>关于 V1</h2></div>
+            <div class="about-card">
+              <p>本地优先 · 隐私优先。无账号、无云同步。</p>
+              <p class="muted">提醒与桌面小组件在 Flutter 实现中接入；本原型演示交互与数据结构。</p>
+            </div>
+          </section>
+        </main>
+
+        <nav class="tabbar" role="tablist" aria-label="主导航">
+          <button type="button" class="tab active" data-tab="today" role="tab">
+            <span class="tab-ico">◎</span>今天
+          </button>
+          <button type="button" class="tab" data-tab="plan" role="tab">
+            <span class="tab-ico">▤</span>计划
+          </button>
+          <button type="button" class="tab" data-tab="todos" role="tab">
+            <span class="tab-ico">✓</span>待办
+          </button>
+          <button type="button" class="tab" data-tab="settings" role="tab">
+            <span class="tab-ico">⚙</span>设置
+          </button>
+        </nav>
+      </div>
+      <div class="device-bar"></div>
+    </div>
+
+    <!-- 右侧：宽屏补充（可选阅读） -->
+    <aside class="rail">
+      <h3>快速验证</h3>
+      <ol>
+        <li>点 <strong>+</strong> 新建待办，选分类与提醒</li>
+        <li>勾选完成，看进度环与小组件同步</li>
+        <li>「明天」改期，打开「计划」排时间块</li>
+        <li>设置里导出 JSON</li>
+      </ol>
+      <div class="widget-preview" id="widgetPreview">
+        <div class="widget-label">今日小组件</div>
+        <ul id="widgetList"></ul>
+      </div>
+      <p class="rail-foot">模型预留 <code>domain</code> / 时间戳 / 软删除，便于以后项目·学习卫星与同步。</p>
+    </aside>
+  </div>
+
+  <!-- Quick add sheet -->
+  <div class="sheet" id="sheet" hidden>
+    <div class="sheet-backdrop" data-close></div>
+    <div class="sheet-panel" role="dialog" aria-modal="true" aria-labelledby="sheetTitle">
+      <div class="sheet-handle"></div>
+      <h3 id="sheetTitle">新建待办</h3>
+      <label class="field">
+        <span>标题</span>
+        <input id="inpTitle" type="text" placeholder="例如：回复邮件" maxlength="80" />
+      </label>
+      <div class="field-row">
+        <label class="field">
+          <span>分类</span>
+          <select id="inpCat">
+            <option value="work">工作</option>
+            <option value="study">学习</option>
+            <option value="life">生活</option>
+          </select>
+        </label>
+        <label class="field">
+          <span>优先级</span>
+          <select id="inpPri">
+            <option value="0">低</option>
+            <option value="1" selected>中</option>
+            <option value="2">高</option>
+          </select>
+        </label>
+      </div>
+      <div class="field-row">
+        <label class="field">
+          <span>计划日期</span>
+          <input id="inpDate" type="date" />
+        </label>
+        <label class="field">
+          <span>提醒时间</span>
+          <input id="inpRemind" type="time" />
+        </label>
+      </div>
+      <div class="sheet-actions">
+        <button type="button" class="btn" data-close>取消</button>
+        <button type="button" class="btn primary" id="btnSaveTodo">保存</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast" hidden></div>
+
+  <script src="app.js"></script>
+</body>
+</html>
