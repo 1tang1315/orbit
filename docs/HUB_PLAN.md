@@ -1,10 +1,10 @@
 # 项目知识中枢 · Web App 实施计划
 
-状态：待实施。范围决策已确认（2026-09-28，当日二次修订）：
+状态：待实施。范围决策已确认（2026-09-28，当日二次修订）；目录结构按「后续不止一个 Web 项目」预留（`web/` 工作区 + `web/hub/`，见 §3）：
 
 - **交付物**：Web 界面 + 内置示例数据（7 屏全可点可跳转；真实 GitHub/AI 数据链路不在本期）
 - **技术路线**：**Next.js 全栈一统**（App Router：服务端组件 + Server Actions 做「后端」，弃 NestJS、弃 Vite；Tailwind CSS + SCSS 结合做样式）
-- **代码落点**：**顶层 `web/` 子目录**（自包含的 Next.js 应用，参考 mold 项目 `frontend/` 的组织方式；仓库根只放三大块：Flutter 工程、`docs/`、`web/`），`web/` 内部按**业务域**分目录，前后端代码统一收进各业务域
+- **代码落点**：**顶层 `web/` 工作区**——只做容器与索引，**一个 Web 项目占一个子目录**（为后续多个 Web 项目预留）；本期「项目知识中枢」落 **`web/hub/`**，自包含的 Next.js 应用（参考 mold 项目 `frontend/` 的组织方式），内部按**业务域**分目录，前后端代码统一收进各业务域；仓库根仍只放三大块：Flutter 工程、`docs/`、`web/`
 
 视觉依据：[DESIGN.md](DESIGN.md) §3 屏幕清单 + `docs/项目知识中枢 · Web App.pdf`（7 屏蓝本，6 页 PDF；第 7 屏 Bug 修复快轨按 DESIGN.md 文字规格实现）。
 产品语义依据：`docs/项目知识中枢WebApp规划.txt`（三层知识模型 L1/L2/L3）、[AUTOMATION.md](AUTOMATION.md)（端分工与流水线）。
@@ -13,7 +13,7 @@
 
 ## 1. 目标与非目标
 
-**目标**：在顶层 `web/` 落地一个本地可跑的 Next.js 全栈应用，用一套高保真示例数据（sk-mind / mold / in-stock-agent 三项目）把 7 屏全部走通，验证信息架构与交互，为后续接真实数据（GitHub 接入、AI 生成 L2）留好口。
+**目标**：在 `web/hub/` 落地一个本地可跑的 Next.js 全栈应用，用一套高保真示例数据（sk-mind / mold / in-stock-agent 三项目）把 7 屏全部走通，验证信息架构与交互，为后续接真实数据（GitHub 接入、AI 生成 L2）留好口。
 
 **非目标（本期不做）**：
 
@@ -33,10 +33,10 @@
 | 存储 | `node:sqlite`（Node 24 内置） | 本机 Node v24.19 已验证可用；零原生编译、零下载风险；不引 ORM（Prisma 引擎 / TypeORM 驱动都有原生依赖下载风险，本项目曾踩坑） |
 | 示例数据 | JSON seed → 启动时灌入 SQLite | 数据变更走 JSON，便于对照视觉稿逐屏校对 |
 
-运行方式（`web/` 独立工具链，与 flutter 命令互不干扰）：
+运行方式（`web/hub/` 独立工具链，与 flutter 命令互不干扰；多项目后各自 `cd web/<app-name>`）：
 
 ```powershell
-cd web
+cd web/hub
 npm install        # 首次
 npm run dev        # Next.js 开发服 :3000
 npm run build      # 生产构建（含类型检查）
@@ -44,66 +44,96 @@ npm start          # 生产模式单端口
 # Flutter 侧照旧：flutter analyze / flutter run
 ```
 
-## 3. 目录结构（顶层 `web/`，内部按业务分）
+## 3. 目录结构（顶层 `web/` 工作区：一个 Web 项目一个子目录；应用内部对齐官方 Next.js 结构）
+
+> `hub/` 内部骨架依据官方文档 [Project structure and organization](https://nextjs.org/docs/app/getting-started/project-structure)：根级 `app/`（不用 `src/`）、顶层文件/目录按官方清单、组织策略采用官方示例「Store project files outside of app」（`app/` 只放路由，业务代码外置）。
 
 ```text
 orbit/
   # ===== 仓库根：三大块 =====
   lib/  android/  ios/  test/  pubspec.yaml ...   # Flutter（不动）
   docs/                                           # 项目文档（含开发规范/）
-  web/                        # 顶层目录：自包含 Next.js 全栈应用
-    package.json / next.config.ts / tsconfig.json / postcss.config.mjs
+  web/                          # Web 工作区：只做容器 + 索引，一个 Web 项目一个子目录
+    README.md                   # 工作区索引：登记已有 / 在建 / 规划中的 Web 项目与公共约定
     # 仓库根 .gitignore 追加：node_modules/  .next/  *.tsbuildinfo  next-env.d.ts
+    #   （模式不带斜杠 = 任意深度通配，未来所有 web/<app>/ 一并覆盖）
 
-    app/                        # 路由层（薄：只做 layout、page 组装与数据获取）
-      layout.tsx                # 根布局：引入 AppShell + 全局样式
-      tw.css                    # Tailwind 入口
-      globals.scss              # SCSS 入口（设计令牌 + 基础/组件样式）
-      page.tsx                  # 01 首页 · 动态流
-      projects/[id]/page.tsx    # 02 项目详情
-      board/page.tsx            # 03 任务看板
-      review/page.tsx           # 04 移动复习
-      work-items/[id]/page.tsx  # 05 工作项流水线 / 07 Bug 快轨（同路由变体）
-      tasks/[id]/page.tsx       # 06 任务详情
-      library/page.tsx          # 知识库（简化列表，防侧栏死链）
-      tech-stack/page.tsx       # 技术栈知识（简化列表）
-      retros/page.tsx           # 复盘报告（简化列表）
-      api/health/route.ts       # 健康检查（Route Handler 占位示例）
+    hub/                        # 【本期】项目知识中枢 Web App（Next.js App Router，根级 app/，不用 src/）
 
-    # ===== 业务域（每个目录 = 一个业务的前端组件 + 后端逻辑，前后端统一）=====
-    workspace/                  # 「工作区 · 动态流」聚合域（屏 01）
-      components/               # StatCard / ActivityItem / ReviewQueueCard / L3CardList
-      actions.ts                # 服务端查询（聚合统计与动态流）
-    projects/                   # 「项目」域（屏 02）
-      components/               # ProjectCard / KnowledgeTree / ArchDiagram(SVG) / CommitList
-      actions.ts
-    tasks/                      # 「任务 · 看板」域（屏 03 + 屏 06 写路径）
-      components/               # TaskCard / KanbanColumn / StageChecklist / SessionCard / ConfirmCard
-      actions.ts                # moveTaskStatus（拖拽）、acceptConfirmation（人机交接）
-    work-items/                 # 「工作项流水线」域（屏 05 + 07）
-      components/               # StageProgress / StageColumn / ArtifactCard
-      actions.ts
-    knowledge/                  # 「知识」域（L2 文档 / L3 卡 / 复习 / 复盘，屏 04 及侧栏三页）
-      components/               # LBadge / ReviewCard / DocListItem
-      actions.ts                # reviewCard（再复习/已掌握）
+      # ---- 顶层文件（官方 Top-level files）----
+      package.json              # 依赖与 scripts（dev / build / start）
+      next.config.ts            # Next.js 配置
+      tsconfig.json             # TS 配置；paths：@/* → ./*（别名根 = web/hub/）
+      postcss.config.mjs        # 构建管线（Tailwind v4 + SCSS）
+      eslint.config.mjs         # ESLint
+      .env.local                # 环境变量（不入库；本期无真实密钥）
 
-    shared/                     # 跨业务公共层
-      db.ts                     # node:sqlite 连接单例、建表、seed 装载（dev 热更用 globalThis 缓存）
-      seed/                     # 全部 seed JSON（projects/activity/tasks/work_items/knowledge/sessions）
-      shell/                    # AppShell / Sidebar / Topbar（应用外壳，非业务）
-      ui/                       # 真正通用的小组件与工具（Badge、格式化等）
+      # ---- 顶层目录（官方 Top-level folders）----
+      public/                   # 静态资源：favicon / 图片 / 字体（原样服务）
+
+      app/                      # App Router：只放官方约定文件，纯路由层
+        layout.tsx              # 根布局（<html>/<body>）：引入 AppShell + 全局样式
+        page.tsx                # 01 首页 · 动态流         → /
+        loading.tsx             # 全局骨架屏（Loading UI）
+        not-found.tsx           # 404（Not found UI）
+        error.tsx               # 错误边界（Error UI）
+        tw.css                  # Tailwind 入口
+        globals.scss            # SCSS 入口（设计令牌 + 基础/组件样式）
+        projects/[id]/page.tsx  # 02 项目详情（动态段）     → /projects/[id]
+        board/page.tsx          # 03 任务看板               → /board
+        review/page.tsx         # 04 移动复习               → /review
+        work-items/[id]/page.tsx  # 05 流水线 / 07 Bug 快轨 → /work-items/[id]（同段变体）
+        tasks/[id]/page.tsx     # 06 任务详情               → /tasks/[id]
+        library/page.tsx        # 知识库（侧栏简化页）       → /library
+        tech-stack/page.tsx     # 技术栈知识（侧栏简化页）   → /tech-stack
+        retros/page.tsx         # 复盘报告（侧栏简化页）     → /retros
+        api/health/route.ts     # Route Handler（API 端点） → /api/health
+        # 官方约定备用项（本期用不上，需要时再引）：
+        #   route group `(group)` 分组不改 URL · 私有文件夹 `_x` 不参与路由
+        #   · `@slot` 平行路由 · `(..)` 拦截路由 · metadata 文件（icon/opengraph-image/sitemap/robots）
+
+      # ===== 业务域（官方示例「Split project files by feature」：一域一目录，前后端统一）=====
+      features/                 # 业务域：一域一目录（前后端统一）
+        workspace/              # 「工作区 · 动态流」聚合域（屏 01）
+          components/           # StatCard / ActivityItem / ReviewQueueCard / L3CardList
+          actions.ts            # 服务端查询（聚合统计与动态流）
+        projects/               # 「项目」域（屏 02）
+          components/           # ProjectCard / KnowledgeTree / ArchDiagram(SVG) / CommitList
+          actions.ts
+        tasks/                  # 「任务 · 看板」域（屏 03 + 屏 06 写路径）
+          components/           # TaskCard / KanbanColumn / StageChecklist / SessionCard / ConfirmCard
+          actions.ts            # moveTaskStatus（拖拽）、acceptConfirmation（人机交接）
+        work-items/             # 「工作项流水线」域（屏 05 + 07）
+          components/           # StageProgress / StageColumn / ArtifactCard
+          actions.ts
+        knowledge/              # 「知识」域（L2 文档 / L3 卡 / 复习 / 复盘，屏 04 及侧栏三页）
+          components/           # LBadge / ReviewCard / DocListItem
+          actions.ts            # reviewCard（再复习/已掌握）
+
+      components/               # 跨业务通用 UI（官方 components 占位名，无框架含义）
+        shell/                  # AppShell / Sidebar / Topbar（应用外壳，非业务）
+        ui/                     # Badge 等通用小组件 + Tailwind theme 扩展出口
+      lib/                      # 跨业务基础设施（官方 lib 占位名）
+        db.ts                   # node:sqlite 连接单例、建表、seed 装载（dev 热更用 globalThis 缓存）
+        seed/                   # 全部 seed JSON（projects/activity/tasks/work_items/knowledge/sessions）
+
+    # 以后新 Web 项目 → web/<app-name>/（与 hub/ 平级；各自 package.json，互不依赖、互不引用）
 ```
 
 组织原则：
 
-- **业务域目录里前后端不拆**：`components/` 是界面，`actions.ts` 是该业务的服务端逻辑（`'use server'`），一个业务开一个目录看全貌。
-- **`app/` 保持薄**：只有路由文件与数据组装，不堆业务组件；URL 形状与 §6 屏幕表一一对应。
-- **seed 集中在 `shared/seed/`**：数据是跨业务的基础设施，由 `shared/db.ts` 统一装载；业务域只管读写。
-- 与 Flutter 无路径冲突：`app/`、`shared/`、业务目录均不与 `lib/`、`test/`、`android/`、`ios/` 重名；`package.json` 与 `pubspec.yaml` 各管各的工具链。
+- **`web/` 是工作区、不是应用**：它只有索引 README，不含业务代码；**一个 Web 项目 = `web/<app-name>/` 一个自包含目录**（自己的 `package.json`、配置、工具链），项目之间不互相 import，删掉或替换任一个不影响其它。命名用小写短词（本期 `hub` = 项目知识中枢），中英文对照登记在 `web/README.md`。
+- **跨应用复用先留口、不预建**：本期不引 monorepo 工具；等第二个 Web 项目落地且确有共享代码（设计令牌 / 组件库）时，再把 `web/package.json` 升为 npm workspaces 根、共享物放 `web/packages/*`——`hub/components/ui` 的写法已经是它的雏形。
+- **骨架对齐官方 Next.js 结构**（[Project structure and organization](https://nextjs.org/docs/app/getting-started/project-structure)）：根级 `app/` + `public/`，顶层文件按官方清单（`next.config.ts` / `tsconfig.json` / `postcss.config.mjs` / `eslint.config.mjs` / `.env.local`）。官方对组织方式明确 **unopinionated**，本项目采用其示例策略 **「Store project files outside of app」**：`app/` 只放路由与官方约定文件（layout / page / loading / not-found / error / route），业务代码外置在 `features/`、`components/`、`lib/`；`components`、`lib` 只是官方所说的通用占位名，`features/` 是本项目自选的业务域层，不与框架约定冲突。
+- **业务域目录里前后端不拆**：`features/<域>/components/` 是界面，`features/<域>/actions.ts` 是该业务的服务端逻辑（`'use server'`），一个业务开一个目录看全貌。
+- **`app/` 保持薄**：只有路由文件与数据组装，不堆业务组件；URL 形状与 §6 屏幕表一一对应。确需在路由内放文件时，只用官方约定的手段——route group `(group)`（分组不改 URL）、私有文件夹 `_x`（不参与路由）——不发明别的结构。
+- **导入别名**：`tsconfig` paths `@/*` → `./`（别名根 = `web/hub/`）；跨目录一律 `@/features/...`、`@/components/...`、`@/lib/...`，不写相对层级穿刺。
+- **seed 集中在 `hub/lib/seed/`**：数据是跨业务的基础设施，由 `hub/lib/db.ts` 统一装载；业务域只管读写。
+- 与 Flutter 无路径冲突：所有 Web 代码都收在 `web/` 之下，`app/`、`features/`、`components/`、`lib/` 均为 `web/hub/` 内的嵌套目录，与仓库根部的 Flutter `lib/`、`test/`、`android/`、`ios/` 不在同一层；各应用的 `package.json` 与根部 `pubspec.yaml` 各管各的工具链。
 
 ## 4. 设计令牌（源自 DESIGN.md §4）
 
-以 SCSS 变量 + CSS 变量双轨定义（SCSS 供组件样式引用，CSS 变量供 Tailwind arbitrary value 与运行时引用），`shared/ui` 中同步导出 Tailwind theme 扩展：
+以 SCSS 变量 + CSS 变量双轨定义（SCSS 供组件样式引用，CSS 变量供 Tailwind arbitrary value 与运行时引用），`hub/components/ui` 中同步导出 Tailwind theme 扩展：
 
 | 令牌 | 值 | 用途 |
 | --- | --- | --- |
@@ -139,11 +169,11 @@ orbit/
 
 **写路径（最小 3 个，全部为 Server Actions）**：
 
-1. `tasks/actions.ts` → `moveTaskStatus(taskId, status)`（看板拖拽）
-2. `tasks/actions.ts` → `acceptConfirmation(id)`（人机交接「采纳默认建议」）
-3. `knowledge/actions.ts` → `reviewCard(id, result)`（复习卡 再复习/已掌握）
+1. `features/tasks/actions.ts` → `moveTaskStatus(taskId, status)`（看板拖拽）
+2. `features/tasks/actions.ts` → `acceptConfirmation(id)`（人机交接「采纳默认建议」）
+3. `features/knowledge/actions.ts` → `reviewCard(id, result)`（复习卡 再复习/已掌握）
 
-其余屏只读（服务端组件直查 `shared/db.ts`）。
+其余屏只读（服务端组件直查 `lib/db.ts`）。
 
 ## 6. 屏幕清单与验收要点
 
@@ -163,12 +193,12 @@ orbit/
 
 | 里程碑 | 内容 | 完成标准 |
 | --- | --- | --- |
-| **M1 骨架** | 顶层 `web/` 初始化 Next.js（TS + Tailwind v4 + SCSS）、`.gitignore` 追加 node_modules/.next 等、设计令牌落地、AppShell（侧栏+顶栏+路由占位）、`shared/db.ts` 建表 + seed 装载、健康检查 Route Handler | `npm run dev` 起得来，空页面带完整侧栏壳；`flutter analyze` 不受影响 |
-| **M2 展示双屏** | 屏 01 动态流（`workspace/`）、屏 02 项目详情（`projects/`，含 3 项目数据、架构图 SVG、知识树） | 两屏与 PDF 1/2 页对照通过 |
-| **M3 任务双屏** | 屏 03 看板（`tasks/`，含拖拽 Server Action）、屏 06 任务详情（含人机交接确认 Server Action） | 拖拽/确认后刷新状态保持 |
-| **M4 流水线** | 屏 05 工作项流水线 + 屏 07 Bug 快轨变体（`work-items/`） | 需求/Bug 两工作项分别走通 |
-| **M5 复习与补齐** | 屏 04 移动复习（`knowledge/`，复习写库）+ 知识库/技术栈/复盘 3 个简化列表页 | 侧栏零死链；复习进度可累计 |
-| **M6 收口** | 全屏对照 PDF 终检、`npm run build` + `npm start` 生产模式验证、`flutter analyze` 确认未受影响、README 增补 `web/` 双工具链运行说明 | 7 屏验收表全过 |
+| **M1 骨架** | 建 `web/` 工作区（README 索引 + 根 `.gitignore` 追加 node_modules/.next 等）→ 在 `web/hub/` 按官方结构初始化 Next.js（TS + Tailwind v4 + SCSS；`app/` + `public/` + `features/` + `components/` + `lib/`）、设计令牌落地、AppShell（侧栏+顶栏+路由占位）、`lib/db.ts` 建表 + seed 装载、健康检查 Route Handler | `cd web/hub && npm run dev` 起得来，空页面带完整侧栏壳；`flutter analyze` 不受影响 |
+| **M2 展示双屏** | 屏 01 动态流（`features/workspace/`）、屏 02 项目详情（`features/projects/`，含 3 项目数据、架构图 SVG、知识树） | 两屏与 PDF 1/2 页对照通过 |
+| **M3 任务双屏** | 屏 03 看板（`features/tasks/`，含拖拽 Server Action）、屏 06 任务详情（含人机交接确认 Server Action） | 拖拽/确认后刷新状态保持 |
+| **M4 流水线** | 屏 05 工作项流水线 + 屏 07 Bug 快轨变体（`features/work-items/`） | 需求/Bug 两工作项分别走通 |
+| **M5 复习与补齐** | 屏 04 移动复习（`features/knowledge/`，复习写库）+ 知识库/技术栈/复盘 3 个简化列表页 | 侧栏零死链；复习进度可累计 |
+| **M6 收口** | 全屏对照 PDF 终检、`npm run build` + `npm start` 生产模式验证、`flutter analyze` 确认未受影响、根 README 与 `web/README.md` 增补 `web/hub` 双工具链运行说明 | 7 屏验收表全过 |
 
 依赖关系：M1 → M2/M3 可并行 → M4（依赖 M3 的任务态）→ M5 → M6。
 
@@ -177,7 +207,7 @@ orbit/
 1. **逐屏对照**：把 `项目知识中枢 · Web App.pdf` 渲染为图片，与浏览器截图并排比对（区块结构、层级色、状态语义）。
 2. **写路径**：看板拖拽 → 刷新页面状态保留；采纳确认 → 橙框卡转已确认；复习卡计数递增。
 3. **构建**：`npm run build` 零 TS 错误；`npm start` 单端口可访问。
-4. **不伤主线**：`flutter analyze` 仍为 No issues found（`web/` 内的 TS/SCSS 不在 Flutter 分析范围）；`flutter run` 构建不受 `web/package.json` 影响。
+4. **不伤主线**：`flutter analyze` 仍为 No issues found（`web/` 工作区内的 TS/SCSS 不在 Flutter 分析范围）；`flutter run` 构建不受 `web/hub/package.json` 影响。
 5. **数据语义抽查**：L1 紫 / L2 橙 / L3 绿三色与「来源标签（紫=需求/红=Bug）」「状态色（橙=待确认/绿=完成）」两套语言不混用（DESIGN.md §5）。
 
 ## 9. 后续留口（本期不做，但结构上不堵死）

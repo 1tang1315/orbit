@@ -12,7 +12,7 @@
 | 序号 | 文档 | 内容 | 适用范围 |
 |---|---|---|---|
 | 01 | [通用规范](./01-通用规范.md) | 命名、仓库目录、Import 顺序、注释、Git 提交、数据字段约定 | 全仓（Web + Flutter） |
-| 02 | [Web 开发规范](./02-Web开发规范.md) | Next.js 全栈：路由、Server Actions、TypeScript、React、Tailwind + SCSS、数据访问 | `web/` |
+| 02 | [Web 开发规范](./02-Web开发规范.md) | Next.js 全栈：路由、Server Actions、TypeScript、React、Tailwind + SCSS、数据访问 | `web/hub/` |
 | 03 | [Flutter 开发规范](./03-Flutter规范.md) | Dart / Riverpod / Drift 约定与分层 | `lib/`、`test/` |
 
 ---
@@ -21,7 +21,7 @@
 
 | 端 | 技术 | 说明 |
 |---|---|---|
-| 知识中枢 Web（`web/`） | Next.js（App Router）+ TypeScript | 全栈一统：服务端组件读、Server Actions 写 |
+| 知识中枢 Web（`web/hub/`） | Next.js（App Router）+ TypeScript | 全栈一统：服务端组件读、Server Actions 写 |
 | Web 样式 | Tailwind CSS + SCSS | 原子类与组件样式两入口分工，见 02 §5 |
 | Web 存储 | `node:sqlite`（Node 内置） | 无 ORM；seed JSON 启动灌库 |
 | 移动端（Flutter） | Flutter + Riverpod + go_router + Drift | V1 主线：今日待办与日计划 |
@@ -42,10 +42,12 @@
 
 | 目录 | 用途 |
 |---|---|
-| `web/` | 知识中枢 Next.js 全栈应用（自包含：package.json、配置、源码） |
-| `web/app/` | 路由层（薄：layout / page / route） |
-| `web/<业务域>/` | 业务域（workspace、projects、tasks、work-items、knowledge）：components + actions |
-| `web/shared/` | 跨业务公共层：db、seed、shell、ui |
+| `web/` | Web 工作区：容器 + 索引（`web/README.md`），一个 Web 项目一个子目录（结构见 HUB_PLAN §3） |
+| `web/hub/` | 知识中枢 Next.js 全栈应用（自包含：package.json、配置、源码） |
+| `web/hub/app/` | 路由层（薄：只放官方约定文件 layout / page / loading / not-found / error / route） |
+| `web/hub/features/<业务域>/` | 业务域（workspace、projects、tasks、work-items、knowledge）：components + actions |
+| `web/hub/components/` | 跨业务通用 UI：`shell/`（应用外壳）、`ui/`（小组件与令牌出口） |
+| `web/hub/lib/` | 跨业务基础设施：db、seed |
 | `lib/`、`test/` | Flutter 源码与测试 |
 | `docs/` | 项目文档（方案、计划、视觉稿索引、开发规范） |
 | `docs/开发规范/` | 本规范 |

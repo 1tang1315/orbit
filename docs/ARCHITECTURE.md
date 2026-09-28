@@ -69,6 +69,8 @@ orbit/
     PRODUCT.md
     ARCHITECTURE.md
     DATA_MODEL.md
+  web/
+    hub/            # 项目知识中枢 Web App（Next.js，见 HUB_PLAN.md §3）
   lib/
     main.dart
     app.dart

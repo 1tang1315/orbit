@@ -10,34 +10,35 @@
 ### 1.1 三层结构
 
 ```text
-app/          路由层 —— 只做 layout / page 组装与数据获取，不写业务组件实现
-<业务域>/      业务层 —— components/（界面）+ actions.ts（服务端逻辑），前后端不拆
-shared/       公共层 —— db / seed / shell / ui
+app/                     路由层 —— 只放官方约定文件（layout / page / loading / not-found / error / route）与数据组装，不写业务组件实现
+features/<业务域>/        业务层 —— components/（界面）+ actions.ts（服务端逻辑），前后端不拆
+components/  lib/        公共层 —— shell / ui（通用组件）与 db / seed（基础设施）
 ```
 
 ### 1.2 依赖方向（硬性）
 
 ```text
-app/  ──▶  业务域  ──▶  shared/
+app/  ──▶  features/  ──▶  components/ | lib/
 ```
 
 | 规则 | 说明 |
 |---|---|
-| `shared/` 禁止 import 业务域 | 公共层不认识业务；确属某业务的东西放回该业务域 |
-| 业务域之间禁止互相 import `components/` | 跨业务复用的组件**上提**到 `shared/ui/` |
-| 业务域可以 import `shared/` 与其他业务域的 `actions.ts` | 只读查询可复用；写动作不跨域调用 |
+| `components/`、`lib/` 禁止 import 业务域 | 公共层不认识业务；确属某业务的东西放回该业务域 |
+| 业务域之间禁止互相 import `components/` | 跨业务复用的组件**上提**到 `components/ui/` |
+| 业务域可以 import `components/`、`lib/` 与其他业务域的 `actions.ts` | 只读查询可复用；写动作不跨域调用 |
 | `actions.ts` 禁止 import 任何 React 组件 | 服务端逻辑保持纯 TS |
 
 ### 1.3 业务域标准结构
 
 ```text
-tasks/                       # 业务域名 = 领域名（kebab-case）
-  components/                # 该业务的 React 组件（PascalCase.tsx）
-    TaskCard.tsx
-    KanbanColumn.tsx
-  actions.ts                 # 'use server'：该业务的读查询与写动作
-  types.ts                   # 该业务的接口/类型（可选，可内联在 actions.ts）
-  styles.scss                # 该业务专属的复杂样式（可选，优先用 Tailwind）
+features/
+  tasks/                     # 业务域名 = 领域名（kebab-case）
+    components/              # 该业务的 React 组件（PascalCase.tsx）
+      TaskCard.tsx
+      KanbanColumn.tsx
+    actions.ts               # 'use server'：该业务的读查询与写动作
+    types.ts                 # 该业务的接口/类型（可选，可内联在 actions.ts）
+    styles.scss              # 该业务专属的复杂样式（可选，优先用 Tailwind）
 ```
 
 何时新建业务域：对应一屏或一组强关联的屏（参考 HUB_PLAN §6 映表）。拿不准时先放现有域，膨胀后再拆——拆分成本低于预设计。
@@ -59,8 +60,8 @@ tasks/                       # 业务域名 = 领域名（kebab-case）
 
 ```tsx
 // ✅ page.tsx（服务端）取数，把数据下传给客户端叶子组件
-import { getBoardTasks } from '@/tasks/actions';
-import { KanbanBoard } from '@/tasks/components/KanbanBoard';
+import { getBoardTasks } from '@/features/tasks/actions';
+import { KanbanBoard } from '@/features/tasks/components/KanbanBoard';
 
 export default async function BoardPage() {
   const tasks = await getBoardTasks();
@@ -70,7 +71,7 @@ export default async function BoardPage() {
 
 ### 2.3 页面骨架
 
-- 全局壳（侧栏 + 顶栏）在 `app/layout.tsx` 组装自 `shared/shell/`，页面只写内容区。
+- 全局壳（侧栏 + 顶栏）在 `app/layout.tsx` 组装自 `components/shell/`，页面只写内容区。
 - 页面级数据获取写在 `page.tsx` 顶部；超过一个查询时先在业务域 `actions.ts` 里组合，**不在 page 里拼 SQL 或散调 db**。
 
 ---
@@ -79,14 +80,14 @@ export default async function BoardPage() {
 
 ### 3.1 触库入口唯一
 
-- 所有 SQL 只出现在 `shared/db.ts` 与各业务域 `actions.ts`。
+- 所有 SQL 只出现在 `lib/db.ts` 与各业务域 `actions.ts`。
 - React 组件内**禁止**直接 import `node:sqlite` 或写 SQL。
-- 查询返回给 UI 的行必须经过 `shared/db.ts` 的映射：**snake_case 列 → camelCase 字段**（见 01 §1.5）。
+- 查询返回给 UI 的行必须经过 `lib/db.ts` 的映射：**snake_case 列 → camelCase 字段**（见 01 §1.5）。
 
 ### 3.2 读：普通异步函数
 
 ```typescript
-// tasks/actions.ts — 读查询不需要 'use server'
+// features/tasks/actions.ts — 读查询不需要 'use server'
 export async function getBoardTasks(): Promise<Task[]> { ... }
 ```
 
@@ -134,9 +135,9 @@ export async function moveTaskStatus(taskId: string, status: TaskStatus) {
    ```
 
 2. **对象结构优先 `interface`**；联合类型、映射类型、工具类型用 `type`。
-3. **类型与业务同域**：任务类型放 `tasks/types.ts`（或 `actions.ts` 顶部），跨域共用的放 `shared/`；禁止建大一统的 `types/index.ts` 巨石文件。
+3. **类型与业务同域**：任务类型放 `features/tasks/types.ts`（或 `actions.ts` 顶部），跨域共用的放 `lib/`；禁止建大一统的 `types/index.ts` 巨石文件。
 4. 泛型命名：单泛型 `T`，多泛型有意义前缀 `TItem`、`TKey`。
-5. 数据库行类型（snake_case 原始行）与 UI 模型（camelCase）**分开命名**：`TaskRow` vs `Task`；只在 `shared/db.ts` 发生转换。
+5. 数据库行类型（snake_case 原始行）与 UI 模型（camelCase）**分开命名**：`TaskRow` vs `Task`；只在 `lib/db.ts` 发生转换。
 6. 优先用 `as const` + 联合类型表达枚举状态，不引入枚举库。
 
    ```typescript
@@ -233,7 +234,7 @@ export async function moveTaskStatus(taskId: string, status: TaskStatus) {
 3. **嵌套不超过 3 层**；直接子元素用 `>`，状态修饰用 `&`（`&:hover`、`&.is-active`）。
 4. **禁止**：`!important`、ID 选择器（`#x`）、裸色值（必须 `var(--…)` 或 SCSS 变量）。
 5. 选择器块内**不写注释**（语义自明）；`tokens.scss` / `mixins.scss` 令牌文件允许注释。
-6. 全局变量集中在 `app/globals.scss` 顶部（或 `shared/styles/`），值与 HUB_PLAN §4 设计令牌表一致——**改色只改令牌，不改调用处**。
+6. 全局变量集中在 `app/globals.scss` 顶部，值与 HUB_PLAN §4 设计令牌表一致——**改色只改令牌，不改调用处**。
 
 ### 6.4 设计令牌
 
