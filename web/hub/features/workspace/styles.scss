@@ -1,0 +1,95 @@
+// ============================================================
+// 屏 01「首页 · 动态流」专属样式。
+// globals.scss 已预置本屏的区块与列表类（stat-* / project-* /
+// feed-* / activity-* / queue-* / l3-*），这里只补预置类没有覆盖的
+// 页面级结构：页头行、区块节奏、主次分栏的侧列与标签行。
+// 颜色一律引用设计令牌变量，不在本文件散落裸色值。
+// ============================================================
+
+// 页头：左侧标题组 + 右侧操作按钮；按钮组不参与伸缩，窄屏时标题换行。
+.workspace-head {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.workspace-head-actions {
+  display: flex;
+  flex: none;
+  gap: 10px;
+  align-items: center;
+}
+
+// 内容区各区块之间的纵向节奏（页头 → 统计卡 → 项目卡 → 动态流）。
+.workspace-block {
+  margin-top: 24px;
+}
+
+// 独立区块的标题行（区块本身不在卡片内，如「接入项目」）：
+// 标题左、查看全部右，与卡片内 .card-title 的排布保持一致。
+.workspace-section-head {
+  display: flex;
+  gap: 12px;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.workspace-section-title {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+// 主次分栏右侧：待复盘任务 + L3 技术知识两张卡纵向堆叠。
+.feed-side {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+// 动态列表容器：去掉 ul 默认的缩进与圆点，让分隔线贴合卡片内边距。
+.activity-list {
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+// 动态条目的标签行：来源 chip 与状态 tag 同行展示，可随文案换行。
+.tag-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  margin-top: 6px;
+}
+
+// 动态标题内链接：保持正文墨色、悬停加下划线，
+// 与紫色 .link（卡片标题右侧的操作链接）区分开。
+.activity-link {
+  color: inherit;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+// 卡片标题右侧的「查看全部 / 去看板」链接：文字与箭头垂直对齐。
+.link-arrow {
+  display: inline-flex;
+  flex: none;
+  gap: 4px;
+  align-items: center;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+// 项目卡整卡可点：悬停描边反馈（与知识库列表行的悬停一致）。
+.project-card {
+  display: block;
+
+  &:hover {
+    border-color: var(--muted);
+  }
+}

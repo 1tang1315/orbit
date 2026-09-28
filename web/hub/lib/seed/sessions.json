@@ -1,0 +1,37 @@
+[
+  {
+    "id": "ses-151",
+    "no": 151,
+    "task_id": "tsk-gitlab-adapter",
+    "status": "执行中",
+    "queue": "ingestion",
+    "elapsed_min": 12,
+    "steps": [
+      { "title": "读取现有 Git 源适配器接口与注册方式", "time": "09:41", "state": "done" },
+      { "title": "起草 GitLab 适配器骨架（auth / repo list / clone）", "time": "09:47", "state": "done" },
+      { "title": "生成 MR 描述与改动说明草稿", "time": "进行中", "state": "current" }
+    ],
+    "changes": [
+      { "path": "pkg/source/gitlab.py", "diff": "新增 +118", "tone": "add" },
+      { "path": "pkg/source/registry.py", "diff": "+6 / −2", "tone": "plain" },
+      { "path": "tests/test_gitlab_source.py", "diff": "空文件 · 待补", "tone": "warn" }
+    ]
+  },
+  {
+    "id": "ses-121",
+    "no": 121,
+    "task_id": "tsk-confidence",
+    "status": "执行中",
+    "queue": "error_report",
+    "elapsed_min": 12,
+    "steps": [
+      { "title": "读取 error report 现有字段与写入路径", "time": "09:32", "state": "done" },
+      { "title": "补 confidence 字段与降级策略", "time": "09:40", "state": "done" },
+      { "title": "起草 API 响应字段变更说明", "time": "进行中", "state": "current" }
+    ],
+    "changes": [
+      { "path": "pkg/api/error_report.py", "diff": "+32 / −6", "tone": "add" },
+      { "path": "pkg/ingest/normalize.py", "diff": "+18 / −4", "tone": "plain" }
+    ]
+  }
+]

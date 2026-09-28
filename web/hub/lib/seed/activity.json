@@ -1,0 +1,142 @@
+[
+  {
+    "id": "act-01",
+    "project_id": "sk-mind",
+    "kind": "commit",
+    "title": "ingest 增量 upsert 改造完成，_row_hash 去重生效",
+    "meta": "提交 · 4 个文件变更",
+    "source_label": "sk-mind",
+    "ago_min": 2,
+    "href": "/projects/sk-mind"
+  },
+  {
+    "id": "act-02",
+    "project_id": "sk-mind",
+    "kind": "l1",
+    "title": "架构图已更新：MES 数据接入链路",
+    "meta": "L1 项目事实层 · 全自动",
+    "source_label": "sk-mind",
+    "ago_min": 18,
+    "href": "/projects/sk-mind?tab=arch"
+  },
+  {
+    "id": "act-03",
+    "project_id": "sk-mind",
+    "kind": "bug",
+    "title": "Bug 快轨 · RQ Worker 无热加载待收口",
+    "meta": "工作项 #157 · 复现记录即验收 · 待人工确认",
+    "source_label": "sk-mind",
+    "ago_min": 30,
+    "href": "/work-items/wi-157"
+  },
+  {
+    "id": "act-04",
+    "project_id": "sk-mind",
+    "kind": "l2",
+    "title": "新增踩坑记录：RQ Worker 无热加载，改代码必须重启",
+    "meta": "L2 个人理解层 · AI 起草，待你确认",
+    "source_label": "sk-mind",
+    "ago_min": 60,
+    "href": "/projects/sk-mind?tab=docs"
+  },
+  {
+    "id": "act-05",
+    "project_id": "mold",
+    "kind": "commit",
+    "title": "试模工单模块已合并，优先级与跳票 SLA 接入",
+    "meta": "提交 · 7 个文件变更",
+    "source_label": "mold",
+    "ago_min": 180,
+    "href": "/projects/mold"
+  },
+  {
+    "id": "act-06",
+    "project_id": "sk-mind",
+    "kind": "l3",
+    "title": "技术知识卡提炼：FastAPI 依赖注入与 RQ 队列隔离",
+    "meta": "L3 跨项目技术知识 · 命中 2 个项目",
+    "source_label": "跨项目",
+    "ago_min": 460,
+    "href": "/tech-stack"
+  },
+  {
+    "id": "act-07",
+    "project_id": "in-stock-agent",
+    "kind": "commit",
+    "title": "呆滞物料报表新增「原因 / 建议」两列",
+    "meta": "提交 · 3 个文件变更",
+    "source_label": "in-stock-agent",
+    "ago_min": 500,
+    "href": "/projects/in-stock-agent"
+  },
+  {
+    "id": "act-08",
+    "project_id": null,
+    "kind": "retro",
+    "title": "本周 7 个任务等待生成复盘草稿",
+    "meta": "全工作区 · 复盘提醒",
+    "source_label": "全工作区",
+    "ago_min": 525,
+    "href": "/board"
+  },
+  {
+    "id": "act-09",
+    "project_id": "mold",
+    "kind": "l2",
+    "title": "ADR-014 已确认：接口写前校验冲突策略",
+    "meta": "L2 个人理解层 · 已确认",
+    "source_label": "mold",
+    "ago_min": 600,
+    "href": "/projects/mold?tab=docs"
+  },
+  {
+    "id": "act-10",
+    "project_id": "in-stock-agent",
+    "kind": "l1",
+    "title": "依赖清单与提交历史已刷新",
+    "meta": "L1 项目事实层 · 全自动",
+    "source_label": "in-stock-agent",
+    "ago_min": 640,
+    "href": "/projects/in-stock-agent?tab=commits"
+  },
+  {
+    "id": "act-11",
+    "project_id": "sk-mind",
+    "kind": "commit",
+    "title": "docs: 更新 README 启动与运行说明",
+    "meta": "提交 · 1 个文件变更",
+    "source_label": "sk-mind",
+    "ago_min": 1500,
+    "href": "/projects/sk-mind"
+  },
+  {
+    "id": "act-12",
+    "project_id": "mold",
+    "kind": "l3",
+    "title": "知识卡提炼：Vue 3 标签页内表格首屏性能",
+    "meta": "L3 跨项目技术知识 · 命中 1 个项目",
+    "source_label": "跨项目",
+    "ago_min": 1600,
+    "href": "/tech-stack"
+  },
+  {
+    "id": "act-13",
+    "project_id": "sk-mind",
+    "kind": "retro",
+    "title": "复盘 · ingest 增量 upsert 改造 草稿已生成",
+    "meta": "L2 个人理解层 · 待你过目",
+    "source_label": "sk-mind",
+    "ago_min": 1700,
+    "href": "/retros"
+  },
+  {
+    "id": "act-14",
+    "project_id": "in-stock-agent",
+    "kind": "commit",
+    "title": "fix(agent): 呆滞判定排除在途库存",
+    "meta": "提交 · 2 个文件变更",
+    "source_label": "in-stock-agent",
+    "ago_min": 2600,
+    "href": "/projects/in-stock-agent"
+  }
+]

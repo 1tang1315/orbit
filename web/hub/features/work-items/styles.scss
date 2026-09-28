@@ -1,0 +1,54 @@
+// ============================================================
+// 屏 05「工作项流水线」/ 屏 07「Bug 修复快轨」专属样式。
+// globals.scss 已预置 pipe-* / stage-* / artifact-* / ghost-note
+// 等基础类（不改动该文件），这里只补两屏新增的变体：
+// 工作项切换入口、Bug 快轨灰化列与禁用态、收口占位间距。
+// ============================================================
+
+// 面包屑下方的工作项切换入口（wi-142 ↔ wi-157 互相可达，侧栏无此入口）
+.wi-switch {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  margin-top: 12px;
+
+  .ghost-note {
+    margin-right: 2px;
+  }
+
+  .chip {
+    cursor: pointer;
+
+    &:hover {
+      color: var(--ink);
+    }
+
+    &.is-active {
+      font-weight: 600;
+      color: var(--l1);
+      background-color: var(--l1-soft);
+    }
+  }
+}
+
+// 屏 07：Bug 快轨的规格列整列降透明度（列头注明「Bug 快轨 · 规格跳过」）
+.pipe-col.is-readonly {
+  opacity: 0.6;
+}
+
+// 灰化列里的「新增产物」禁用态（globals.scss 只定义了 hover）
+.artifact-add:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+
+  &:hover {
+    border-color: var(--border);
+    color: var(--muted);
+  }
+}
+
+// 屏 07：第 4 列「待人工确认」占位与产物卡、新增按钮之间的间距
+.pipe-manual-confirm {
+  padding-top: 12px;
+}

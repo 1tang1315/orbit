@@ -1,0 +1,95 @@
+// ============================================================
+// 知识域样式：app/globals.scss 已预置屏 04（review-stage / phone*）
+// 与侧栏简化列表页（list-row*）的主体类，这里只补这些类覆盖不到的
+// 少量结构：列表行内层、更新行文字、统计行与空态。
+// 由本域组件 `import '../styles.scss'`（components/ 下相对本文件）引入。
+// ============================================================
+
+// 列表页：头部（eyebrow / page-title / page-sub）与列表之间的间距
+.knowledge-list {
+  margin-top: 20px;
+}
+
+// .list-row 内层：标题与 meta 上下堆叠，右侧状态标签保持独立列
+.list-row-body {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+}
+
+// 技术栈卡行的命中项目 chips
+.list-row-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+// 列表空态（复盘报告等）
+.list-empty {
+  padding: 40px 20px;
+  margin: 0;
+  font-size: 14px;
+  color: var(--muted);
+  text-align: center;
+  background-color: var(--surface);
+  border: 1px dashed var(--border);
+  border-radius: 12px;
+}
+
+// 屏 04「项目更新」行：标题自适应截断，相对时间靠右
+.phone-update-title {
+  overflow: hidden;
+  flex: 1;
+  min-width: 0;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.phone-update-time {
+  flex: none;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+// 屏 04「本周沉淀」统计行：左标签右数值
+.phone-stat {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 0;
+  font-size: 14px;
+}
+
+.phone-stat-value {
+  font-weight: 700;
+}
+
+// 屏 04 复习队列空态（今日已完成 / 今日无到期卡）
+.review-empty {
+  padding: 34px 20px;
+  margin-bottom: 14px;
+  text-align: center;
+  background-color: var(--surface);
+  border: 1px dashed var(--border);
+  border-radius: var(--radius-card);
+}
+
+.review-empty-title {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.review-empty-note {
+  margin: 6px 0 0;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+// 来源行补掉段落默认下边距，使操作按钮与来源之间保持 18px 间距
+.review-card-source {
+  margin-bottom: 0;
+}

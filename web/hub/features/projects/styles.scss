@@ -1,0 +1,73 @@
+// ============================================================
+// 屏 02「项目详情」专属样式：只补 app/globals.scss 预置类
+// 未覆盖的少量布局与状态（globals.scss 不改，能复用的一律复用）。
+// ============================================================
+
+// 页头右侧占位按钮组（重新扫描 / 生成文档）
+.head-actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+// 非概览 Tab 的内容容器：与 tabs 下边线留出间距
+//（概览由 .project-cols 自带 margin-top，不套这层）
+.tab-panel {
+  margin-top: 20px;
+}
+
+// 概览右列：架构图卡 / 最近文档 / 最近提交 纵向堆叠
+.panel-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+// 卡片标题右侧信息组（计数说明 + 「查看全部」）
+.card-side {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.card-note {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--muted);
+}
+
+.card-more {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--l1);
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+// 行头：左标题 + 右侧标签组（技术栈知识卡）
+.row-between {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.tag-row {
+  display: inline-flex;
+  gap: 6px;
+  align-items: center;
+}
+
+// 面包屑里的「工作区」链接悬停提示
+.breadcrumb a:hover {
+  color: var(--l1);
+  text-decoration: underline;
+}
+
+// 知识树中不可跳转的静态条目：hover 不变紫，与可点击条目区分
+.tree-item.is-static:hover .tree-item-label {
+  color: var(--ink);
+  text-decoration: none;
+}

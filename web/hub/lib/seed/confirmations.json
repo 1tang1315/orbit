@@ -1,0 +1,10 @@
+[
+  {
+    "id": "conf-151",
+    "ref_type": "task",
+    "ref_id": "tsk-gitlab-adapter",
+    "question": "GitLab 认证方式的默认顺序",
+    "body": "AI 给出 PAT / Deploy Token / OAuth 三种方案，需要你定默认值与回退顺序。默认建议：先读配置的 PAT，缺失时回退 Deploy Token，私有仓库仍走 PAT，不引入 OAuth 以避开回调链路。",
+    "state": "pending"
+  }
+]
