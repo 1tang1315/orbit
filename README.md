@@ -22,6 +22,7 @@
 | [docs/AUTOMATION.md](docs/AUTOMATION.md) | 端协同与 AI 自动化蓝图（三端分工、收件箱异步流水线、MCP Server，V2） |
 | [docs/DESIGN.md](docs/DESIGN.md) | 视觉稿索引（移动端 8 屏 + 知识中枢 Web 7 屏）与设计语言 |
 | [docs/HUB_PLAN.md](docs/HUB_PLAN.md) | 知识中枢 Web App 实施计划（技术选型、数据模型、7 屏验收、分期） |
+| [docs/开发规范/](docs/开发规范/README.md) | 开发规范：通用（命名/Import/Git/注释）+ Web（Next.js 全栈）+ Flutter |
 
 ## 技术栈（V1）
 
