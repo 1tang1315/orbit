@@ -1,0 +1,27 @@
+# This file tracks properties of this Flutter project.
+# Used by tools such as `flutter build` and `flutter run` and IDE plugins.
+#
+# Do not remove or edit this file by hand; changes may be lost.
+
+version:
+  revision: "b45fa18946ecc2d9b4009952c636ba7e2ffbb787"
+  channel: "stable"
+
+project_type: app
+
+# Tracks metadata for the flutter migrate command
+migration:
+  platforms:
+    - platform: root
+      create_revision: b45fa18946ecc2d9b4009952c636ba7e2ffbb787
+      base_revision: b45fa18946ecc2d9b4009952c636ba7e2ffbb787
+    - platform: android
+      create_revision: b45fa18946ecc2d9b4009952c636ba7e2ffbb787
+      base_revision: b45fa18946ecc2d9b4009952c636ba7e2ffbb787
+    - platform: ios
+      create_revision: b45fa18946ecc2d9b4009952c636ba7e2ffbb787
+      base_revision: b45fa18946ecc2d9b4009952c636ba7e2ffbb787
+
+  # User provided section
+
+# For more information see: https://docs.flutter.dev/deployment/migration

@@ -129,6 +129,7 @@ orbit/
 - 同步：本地变更队列 + 云端 PostgreSQL（Supabase / Node）。
 - 身份：可选账号；匿名期纯本地。
 - 模块：`domain` 字段扩展 project / study / work / life，界面后挂，不在 V1 出现。
+- 端协同与 AI 自动化：三端分工（手机采集 / PC 加工 / Agent 引擎）、收件箱异步流水线、Orbit MCP Server，见 [AUTOMATION.md](AUTOMATION.md)——V1 数据与分层设计需为其留口，不提前实现。
 
 ## 9. 依赖版本策略
 
