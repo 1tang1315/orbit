@@ -3,7 +3,7 @@
 状态：待实施。范围决策已确认（2026-09-28）：
 
 - **交付物**：Web 界面 + 内置示例数据（7 屏全可点可跳转；真实 GitHub/AI 数据链路不在本期）
-- **技术路线**：本地全栈 Web（Node 后端 + SQLite 持久化 + React 前端）
+- **技术路线**：本地全栈 Web（NestJS 后端 + SQLite 持久化 + React 前端）
 - **代码落点**：本仓库子目录 `hub/`
 
 视觉依据：[DESIGN.md](DESIGN.md) §3 屏幕清单 + `docs/项目知识中枢 · Web App.pdf`（7 屏蓝本，6 页 PDF；第 7 屏 Bug 修复快轨按 DESIGN.md 文字规格实现）。
@@ -28,10 +28,11 @@
 | 层 | 选型 | 理由 |
 | --- | --- | --- |
 | 前端框架 | React 19 + TypeScript + Vite | 生态成熟、7 屏路由清晰；Vite 构建快 |
-| 路由 | react-router-dom | 与视觉稿页面层级一一对应 |
+| 路由（前端） | react-router-dom | 与视觉稿页面层级一一对应 |
 | 样式 | 原生 CSS + 设计令牌（CSS 变量） | Notion 风格需要精确控制；零额外构建依赖 |
-| 后端 | Hono + @hono/node-server | 极轻量 TS 友好；只是一层薄 API |
-| 存储 | `node:sqlite`（Node 24 内置） | 本机 Node v24.19 已验证可用；零原生编译、零下载风险（本项目曾因下载原生库失败踩坑） |
+| 后端 | **NestJS**（Controller / Service / Module） | 用户确认选型，借项目练手并为后续长成真项目做工程化储备；本期接口少，用薄 Controller + Service 直连数据库 |
+| ORM | 不引入（TypeORM/Prisma 均不加） | Prisma 引擎、TypeORM 驱动都有原生依赖下载风险（本项目曾因下载原生库失败踩坑）；手写 SQL 足够 |
+| 存储 | `node:sqlite`（Node 24 内置） | 本机 Node v24.19 已验证可用；零原生编译、零下载风险，由 NestJS 的 DatabaseService 注入使用 |
 | 示例数据 | JSON seed → 启动时灌入 SQLite | 数据变更走 JSON，便于对照视觉稿逐屏校对 |
 
 运行方式：
@@ -39,9 +40,9 @@
 ```powershell
 cd hub
 npm install
-npm run dev      # Vite :5173（/api 代理到后端 :3789）
-npm run build    # 前端产物 + 类型检查
-npm start        # 生产模式：单端口同时托管 dist 与 API
+npm run dev         # concurrently 起 NestJS :3789 + Vite :5173（/api 已代理）
+npm run build       # web 产物构建 + api 类型检查编译
+npm start           # 生产模式：NestJS 单端口托管 web/dist 与 /api
 ```
 
 ## 3. 目录结构
@@ -49,47 +50,53 @@ npm start        # 生产模式：单端口同时托管 dist 与 API
 ```text
 hub/
   package.json
+  nest-cli.json
   tsconfig.json
-  vite.config.ts
-  server/
-    index.ts          # 启动入口：托管 dist + /api
-    db.ts             # node:sqlite 连接、建表、seed 装载
-    routes/
-      projects.ts     # 项目、动态流
-      tasks.ts        # 看板、任务详情、状态写入
-      work-items.ts   # 工作项流水线（含 Bug 快轨）
-      knowledge.ts    # L2 文档、L3 知识卡、复盘
-    seed/
-      projects.json
-      activity.json
-      tasks.json
-      work_items.json
-      knowledge.json
-      sessions.json   # 会话执行轨迹（任务详情屏用）
-  src/
-    main.tsx
-    router.tsx
-    styles/
-      tokens.css      # 设计令牌
-      base.css
-    layout/
-      AppShell.tsx    # 左侧栏 + 顶栏 + 内容区
-      Sidebar.tsx
-      Topbar.tsx      # 搜索、同步状态
-    pages/
-      FeedPage.tsx        # 01 首页 · 动态流
-      ProjectPage.tsx     # 02 项目详情
-      BoardPage.tsx       # 03 任务看板
-      ReviewPage.tsx      # 04 移动复习（桌面页内嵌手机框）
-      PipelinePage.tsx    # 05 工作项流水线（07 Bug 快轨为同路由变体）
-      TaskDetailPage.tsx  # 06 任务详情
-      LibraryPage.tsx     # 知识库（简化列表，防侧栏死链）
-      TechStackPage.tsx   # 技术栈知识（简化列表）
-      RetroPage.tsx       # 复盘报告（简化列表）
-    components/
-      StatCard.tsx / ProjectCard.tsx / ActivityItem.tsx
-      TaskCard.tsx / StageColumn.tsx / ConfirmCard.tsx
-      KnowledgeTree.tsx / LBadge.tsx   # L1紫/L2橙/L3绿 层级徽标
+  vite.config.ts           # root 指向 web/，/api 代理到 :3789
+  api/                     # NestJS 应用
+    src/
+      main.ts              # 启动入口：listen :3789；生产模式托管 ../web/dist
+      app.module.ts
+      db/
+        database.service.ts  # node:sqlite 连接、建表、seed 装载（Injectable）
+        seed/
+          projects.json
+          activity.json
+          tasks.json
+          work_items.json
+          knowledge.json
+          sessions.json   # 会话执行轨迹（任务详情屏用）
+      projects/            # Module + Controller + Service：项目、动态流
+      tasks/               # 看板、任务详情、状态写入
+      work-items/          # 工作项流水线（含 Bug 快轨）
+      knowledge/           # L2 文档、L3 知识卡、复盘、复习
+      health/              # 健康检查
+  web/                     # Vite + React 前端
+    index.html
+    src/
+      main.tsx
+      router.tsx
+      styles/
+        tokens.css         # 设计令牌
+        base.css
+      layout/
+        AppShell.tsx       # 左侧栏 + 顶栏 + 内容区
+        Sidebar.tsx
+        Topbar.tsx         # 搜索、同步状态
+      pages/
+        FeedPage.tsx        # 01 首页 · 动态流
+        ProjectPage.tsx     # 02 项目详情
+        BoardPage.tsx       # 03 任务看板
+        ReviewPage.tsx      # 04 移动复习（桌面页内嵌手机框）
+        PipelinePage.tsx    # 05 工作项流水线（07 Bug 快轨为同路由变体）
+        TaskDetailPage.tsx  # 06 任务详情
+        LibraryPage.tsx     # 知识库（简化列表，防侧栏死链）
+        TechStackPage.tsx   # 技术栈知识（简化列表）
+        RetroPage.tsx       # 复盘报告（简化列表）
+      components/
+        StatCard.tsx / ProjectCard.tsx / ActivityItem.tsx
+        TaskCard.tsx / StageColumn.tsx / ConfirmCard.tsx
+        KnowledgeTree.tsx / LBadge.tsx   # L1紫/L2橙/L3绿 层级徽标
 ```
 
 入库前补 `.gitignore`：`hub/node_modules/`、`hub/dist/`。
@@ -148,7 +155,7 @@ hub/
 
 | 里程碑 | 内容 | 完成标准 |
 | --- | --- | --- |
-| **M1 骨架** | `hub/` 初始化（Vite+React+TS+Hono）、`.gitignore` 补 node_modules/dist、设计令牌、AppShell（侧栏+顶栏+路由占位）、db.ts 建表 + seed 装载、健康检查 API | `npm run dev` 起得来，空页面带完整侧栏壳 |
+| **M1 骨架** | `hub/` 初始化（NestJS api/ + Vite React web/ 双包结构）、`.gitignore` 补 node_modules/dist、设计令牌、AppShell（侧栏+顶栏+路由占位）、DatabaseService 建表 + seed 装载、健康检查 API | `npm run dev` 双端起得来，空页面带完整侧栏壳 |
 | **M2 展示双屏** | 屏 01 动态流、屏 02 项目详情（含 3 项目数据、架构图 SVG、知识树） | 两屏与 PDF 1/2 页对照通过 |
 | **M3 任务双屏** | 屏 03 看板（含拖拽写 API）、屏 06 任务详情（含人机交接确认写 API） | 拖拽/确认后刷新状态保持 |
 | **M4 流水线** | 屏 05 工作项流水线 + 屏 07 Bug 快轨变体 | 需求/Bug 两工作项分别走通 |
