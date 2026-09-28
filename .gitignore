@@ -52,3 +52,11 @@ key.properties
 
 # OS
 Thumbs.db
+
+# Web workspace (web/<app>/)
+node_modules/
+.next/
+*.tsbuildinfo
+next-env.d.ts
+.data/
+install.log
