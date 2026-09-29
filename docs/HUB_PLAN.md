@@ -19,7 +19,7 @@
 
 - 真实 GitHub 仓库扫描 / webhook / 定时重扫
 - AI 起草 L2、报告生成等模型调用
-- DSH（DeepSeek Harness）插件体系
+- MCP 外部调用的正式接入实现（本期仅保留调用边界与示例数据）
 - 账号、多用户、公网部署
 - Orbit 移动端改动（移动端仍是 V1 待办主线，互不影响）
 
@@ -28,7 +28,7 @@
 | 层 | 选型 | 理由 |
 | --- | --- | --- |
 | 全栈框架 | **Next.js（App Router，TypeScript）** | 用户确认选型：服务端组件直查数据、Server Actions 承担写操作，一个框架统一前后端；React 仅为运行依赖，无需单独选型，Vite 不再需要 |
-| 后端形态 | Server Actions 为主 + 少量 Route Handlers | 7 屏读多写少，读走服务端组件、写走 Server Actions，不引 REST 样板；`/api/*` Route Handlers 仅为将来对外留口 |
+| 后端形态 | 服务端查询 + MCP 外部调用边界 | 7 屏读多写少；真实扫描、生成、执行与修改由外部 MCP 客户端调用 MCP 工具完成，`/api/*` 仅保留健康检查与未来接入留口 |
 | 样式 | **Tailwind CSS + SCSS 结合** | Tailwind v4 走独立入口 `app/tw.css`（`@import "tailwindcss"`）管原子类；SCSS 管设计令牌（变量/mixin）与组件样式，入口 `app/globals.scss`；两文件互不掺和，避免 sass 与 Tailwind 指令打架 |
 | 存储 | `node:sqlite`（Node 24 内置） | 本机 Node v24.19 已验证可用；零原生编译、零下载风险；不引 ORM（Prisma 引擎 / TypeORM 驱动都有原生依赖下载风险，本项目曾踩坑） |
 | 示例数据 | JSON seed → 启动时灌入 SQLite | 数据变更走 JSON，便于对照视觉稿逐屏校对 |
@@ -167,13 +167,13 @@ orbit/
 | `sessions` | 06 | id, status, queue, elapsed_min, steps[](标题+时间+状态), changes[](文件+增删) |
 | `confirmations` | 06 | 人机交接卡：id, ref(task/work_item), question, ai_suggestion, state(pending/accepted/edited) |
 
-**写路径（最小 3 个，全部为 Server Actions）**：
+**写路径（最小 3 个，生产环境由外部 MCP 调用完成）**：
 
-1. `features/tasks/actions.ts` → `moveTaskStatus(taskId, status)`（看板拖拽）
-2. `features/tasks/actions.ts` → `acceptConfirmation(id)`（人机交接「采纳默认建议」）
-3. `features/knowledge/actions.ts` → `reviewCard(id, result)`（复习卡 再复习/已掌握）
+1. MCP 工具 `move_task_status(taskId, status)`（看板拖拽）
+2. MCP 工具 `accept_confirmation(id)`（人机交接「采纳默认建议」）
+3. MCP 工具 `review_card(id, result)`（复习卡「再复习/已掌握」）
 
-其余屏只读（服务端组件直查 `lib/db.ts`）。
+其余屏只读（服务端组件直查 `lib/db.ts`）；示例页面中的 Server Actions 仅用于本地演示，正式修改必须转发给外部 MCP 服务。
 
 ## 6. 屏幕清单与验收要点
 
@@ -181,10 +181,10 @@ orbit/
 | --- | --- | --- | --- | --- |
 | 01 首页·动态流 | `/` | 4 统计卡（接入项目/L2/L3/待复盘）→ 2 项目卡 → 最近动态（左 2/3）+ 待复盘任务 & L3 技术知识卡（右 1/3） | 「去任务看板」「查看全部」跳转；「接入仓库」「生成周报」按钮占位提示 | 与 PDF 第 1 页逐块对照 |
 | 02 项目详情 | `/projects/[id]` | 面包屑 + 标题行（重新扫描/生成文档）+ 6 Tab（概览/架构图/文档/提交历史/技术栈知识/复盘）→ 知识树（L1/L2/L3 三段）+ 架构图卡（L1 全自动）+ 最近文档（含橙色「AI 起草·待你确认」态）+ 最近提交 | Tab 切换；知识树条目跳文档列表；架构图用静态 SVG 数据流（MES API → Ingestion → raw.mes_* → RQ Worker） | 与 PDF 第 2 页对照；3 项目均可进 |
-| 03 任务看板 | `/board` | 顶行（筛选 Tab：全部/我的/交给会话执行/定时任务）+ 5 列（待规划/待办/进行中/待复盘/已完成）+ 紫色主按钮「新建任务」 | 列间拖拽改状态（Server Action，刷新保持）；卡片点进 06 | 与 PDF 第 3 页对照；拖拽后刷新状态不丢 |
+| 03 任务看板 | `/board` | 顶行（筛选 Tab：全部/我的/交给 MCP 执行/定时任务）+ 5 列（待规划/待办/进行中/待复盘/已完成）+ 紫色主按钮「新建任务」 | 列间拖拽通过外部 MCP 工具改状态，刷新保持；卡片点进 06 | 与 PDF 第 3 页对照；拖拽后刷新状态不丢 |
 | 04 移动复习 | `/review` | 桌面页内嵌 390 宽手机框：复习卡（L3 徽标、3/12 进度、再复习/已掌握）+ 项目更新 + 今日复习进度条 + 本周沉淀 + 底部 5 Tab（动态/项目/复习/通知/我的，仅样式） | 「再复习/已掌握」切下一张并写库；连续天数徽标 | 与 PDF 第 4 页对照 |
 | 05 工作项流水线 | `/work-items/[id]` | 顶部 4 阶段进度条（01 需求与目标 → 02 设计规格 → 03 执行方案 → 04 完成与沉淀）+ 4 列产物卡（标签 + 标题 + meta）+ 每列底部「新增产物」占位 | 卡片状态态（已确认/待过目橙框）；「沉淀到知识库」按钮占位 | 与 PDF 第 5 页对照 |
-| 06 任务详情 | `/tasks/[id]` | 左：处理阶段 checklist（5 步 3/5 已推进）+ 会话执行卡（进度条 + 步骤日志 + 暂存区文件列表）+ 人机交接橙框卡（采纳默认建议/我要改一下）；右栏：任务属性/来源与关联/时间线/接下来会发生什么/完成后自动产出 | 「采纳默认建议」→ 确认卡转已确认（Server Action）；checklist 随之推进 | 与 PDF 第 6 页对照 |
+| 06 任务详情 | `/tasks/[id]` | 左：处理阶段 checklist（5 步 3/5 已推进）+ MCP 执行卡（进度条 + 步骤日志 + 暂存区文件列表）+ 人机交接橙框卡（采纳默认建议/我要改一下）；右栏：任务属性/来源与关联/时间线/接下来会发生什么/完成后自动产出 | 「采纳默认建议」→ 通过外部 MCP 工具修改确认卡与 checklist | 与 PDF 第 6 页对照 |
 | 07 Bug 修复快轨 | `/work-items/[id]`（`source_type=Bug`） | 同 05 布局，规格列灰化不可编辑；「复现记录即验收」「收口需人工确认」语义标签 | 待人工确认按钮占位 | 按 DESIGN.md §3-07 文字规格 |
 
 侧栏「知识库 / 技术栈知识 / 复盘报告」各给一个简化列表页（读 `knowledge_docs` / `knowledge_cards` / 复盘类 L2），保证零死链；不计入 7 屏验收。
@@ -195,7 +195,7 @@ orbit/
 | --- | --- | --- |
 | **M1 骨架** | 建 `web/` 工作区（README 索引 + 根 `.gitignore` 追加 node_modules/.next 等）→ 在 `web/hub/` 按官方结构初始化 Next.js（TS + Tailwind v4 + SCSS；`app/` + `public/` + `features/` + `components/` + `lib/`）、设计令牌落地、AppShell（侧栏+顶栏+路由占位）、`lib/db.ts` 建表 + seed 装载、健康检查 Route Handler | `cd web/hub && npm run dev` 起得来，空页面带完整侧栏壳；`flutter analyze` 不受影响 |
 | **M2 展示双屏** | 屏 01 动态流（`features/workspace/`）、屏 02 项目详情（`features/projects/`，含 3 项目数据、架构图 SVG、知识树） | 两屏与 PDF 1/2 页对照通过 |
-| **M3 任务双屏** | 屏 03 看板（`features/tasks/`，含拖拽 Server Action）、屏 06 任务详情（含人机交接确认 Server Action） | 拖拽/确认后刷新状态保持 |
+| **M3 任务双屏** | 屏 03 看板（`features/tasks/`，接入 MCP 状态修改工具）、屏 06 任务详情（接入 MCP 人机交接工具） | 拖拽/确认后刷新状态保持 |
 | **M4 流水线** | 屏 05 工作项流水线 + 屏 07 Bug 快轨变体（`features/work-items/`） | 需求/Bug 两工作项分别走通 |
 | **M5 复习与补齐** | 屏 04 移动复习（`features/knowledge/`，复习写库）+ 知识库/技术栈/复盘 3 个简化列表页 | 侧栏零死链；复习进度可累计 |
 | **M6 收口** | 全屏对照 PDF 终检、`npm run build` + `npm start` 生产模式验证、`flutter analyze` 确认未受影响、根 README 与 `web/README.md` 增补 `web/hub` 双工具链运行说明 | 7 屏验收表全过 |
@@ -205,7 +205,7 @@ orbit/
 ## 8. 验证方式
 
 1. **逐屏对照**：把 `项目知识中枢 · Web App.pdf` 渲染为图片，与浏览器截图并排比对（区块结构、层级色、状态语义）。
-2. **写路径**：看板拖拽 → 刷新页面状态保留；采纳确认 → 橙框卡转已确认；复习卡计数递增。
+2. **写路径**：外部 MCP 调用看板/确认/复习工具 → 刷新页面状态保留；橙框卡转已确认；复习卡计数递增。
 3. **构建**：`npm run build` 零 TS 错误；`npm start` 单端口可访问。
 4. **不伤主线**：`flutter analyze` 仍为 No issues found（`web/` 工作区内的 TS/SCSS 不在 Flutter 分析范围）；`flutter run` 构建不受 `web/hub/package.json` 影响。
 5. **数据语义抽查**：L1 紫 / L2 橙 / L3 绿三色与「来源标签（紫=需求/红=Bug）」「状态色（橙=待确认/绿=完成）」两套语言不混用（DESIGN.md §5）。
@@ -214,4 +214,4 @@ orbit/
 
 - 将来对外/自动化 API 走 Route Handlers：`/api/sync`（GitHub 拉取）、`/api/generate`（AI 起草 L2）预留占位即可（AUTOMATION.md 三期）。
 - seed JSON 的字段与将来真实采集字段同名（如 `repo`、`last_synced_at`、`issue_no`），降低迁移成本。
-- DSH 插件路线（规划.txt 路线 C）不阻塞：本应用作为「独立 Web 主体」，将来通过 API/文件与 DSH 互通。
+- MCP 接入路线：本应用作为独立 Web 主体，外部 Agent 通过 MCP 工具读取、调用与修改项目、任务和知识数据；应用内部不嵌入 Agent 运行时。
