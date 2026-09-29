@@ -65,7 +65,7 @@ export async function getTask(id: string): Promise<Task | null> {
   return queryTask(id);
 }
 
-/** 任务最近一次会话执行记录（屏 06 会话执行卡）。 */
+/** 任务最近一次 MCP 执行记录（屏 06 MCP 执行卡）。 */
 export async function getSessionByTask(taskId: string): Promise<Session | null> {
   return querySessionByTask(taskId);
 }

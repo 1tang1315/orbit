@@ -32,7 +32,7 @@ function diffClass(tone: FileChange['tone']): string {
   return tone === 'warn' ? 'change-diff is-warn' : 'change-diff';
 }
 
-/** 屏 06 左栏第 2 块：会话执行卡（进度条 + 步骤日志 + 暂存区文件列表）。 */
+/** 屏 06 左栏第 2 块：MCP 执行卡（进度条 + 步骤日志 + 暂存区文件列表）。 */
 export function SessionCard({ session }: SessionCardProps) {
   const percent = progressPercent(session);
   const doneCount = session.steps.filter((step) => step.state === 'done').length;
@@ -41,7 +41,7 @@ export function SessionCard({ session }: SessionCardProps) {
     <section className="card">
       <div className="session-head">
         <span className="session-name">
-          {`会话 #${session.no}`}
+          {`MCP 执行 #${session.no}`}
           <span className="chip">{`${session.queue} 队列`}</span>
         </span>
         <span

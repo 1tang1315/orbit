@@ -69,12 +69,12 @@
     "status": "todo",
     "issue_no": 151,
     "flags": [
-      { "text": "由工作项 #142 拆解 · 待交给会话", "tone": "accent" }
+      { "text": "由工作项 #142 拆解 · 待交给 MCP", "tone": "accent" }
     ],
     "session_id": "ses-151",
     "work_item_id": "wi-142",
     "handler": "session",
-    "meta": "Issue #151 · 待交给会话",
+    "meta": "Issue #151 · 待交给 MCP",
     "in_review_queue": false,
     "owned": false,
     "checklist": [
@@ -169,7 +169,7 @@
     "session_id": null,
     "work_item_id": null,
     "handler": "cron",
-    "meta": "会话执行中 · cron 每天 09:00",
+    "meta": "MCP 执行中 · cron 每天 09:00",
     "in_review_queue": false,
     "owned": true,
     "checklist": null,
