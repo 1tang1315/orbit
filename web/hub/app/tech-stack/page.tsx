@@ -24,7 +24,7 @@ export default function TechStackPage() {
         {rows.length > 0 ? (
           rows.map((row) => <TechCardListItem key={row.id} row={row} />)
         ) : (
-          <p className="list-empty">暂无技术栈知识卡，复盘与踩坑沉淀后会提炼为 L3。</p>
+          <p className="list-empty">暂无技术栈知识卡 · 完成任务复盘后，可复用的技术经验会自动提炼为 L3 跨项目知识。</p>
         )}
       </div>
     </section>

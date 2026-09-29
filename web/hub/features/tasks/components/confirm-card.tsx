@@ -55,7 +55,7 @@ export function ConfirmCard({ confirmation, task }: ConfirmCardProps) {
           />
           <PlaceholderButton
             label="我要改一下"
-            hint="本期为示例数据：真实场景将打开修改表单，你调整建议后再让会话执行。"
+            hint="打开修改表单，调整 AI 建议后通过 MCP 执行。当前为示例数据。"
           />
         </div>
       )}

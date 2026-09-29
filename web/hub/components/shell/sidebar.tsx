@@ -21,7 +21,6 @@ export interface SidebarProject {
 
 export interface SidebarProps {
   projects: SidebarProject[];
-  projectCount: number;
   syncText: string;
 }
 
@@ -42,7 +41,7 @@ const WORKSPACE_NAV: NavEntry[] = [
 ];
 
 /** 左侧栏：工作区分组 + 项目分组 + 底部连接状态卡。 */
-export function Sidebar({ projects, projectCount, syncText }: SidebarProps) {
+export function Sidebar({ projects, syncText }: SidebarProps) {
   const pathname = usePathname();
   const firstProject = projects[0]?.id ?? 'sk-mind';
 
@@ -64,13 +63,6 @@ export function Sidebar({ projects, projectCount, syncText }: SidebarProps) {
         </span>
         <span className="sidebar-brand-text">
           <span className="sidebar-brand-name">项目知识中枢</span>
-          <span className="sidebar-brand-meta">
-            DSH ·
-            {' '}
-            {projectCount}
-            {' '}
-            个项目
-          </span>
         </span>
       </div>
 
@@ -117,7 +109,7 @@ export function Sidebar({ projects, projectCount, syncText }: SidebarProps) {
         </p>
         <p>
           <span className="status-dot" />
-          DSH 运行中 · 本地优先
+          MCP 就绪 · 外部 Agent 可调用
         </p>
       </div>
     </aside>

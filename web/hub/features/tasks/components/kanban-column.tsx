@@ -62,7 +62,7 @@ export function KanbanColumn({
       </header>
       {children}
       {count === 0 && (
-        <p className="ghost-note">把任务卡拖到这里</p>
+        <p className="ghost-note">拖拽任务卡到此列</p>
       )}
     </section>
   );

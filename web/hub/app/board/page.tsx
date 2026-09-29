@@ -23,7 +23,7 @@ interface FilterTab {
 const FILTER_TABS: readonly FilterTab[] = [
   { value: 'all', label: '全部' },
   { value: 'mine', label: '我的' },
-  { value: 'session', label: '交给会话执行' },
+  { value: 'session', label: '交给 MCP 执行' },
   { value: 'cron', label: '定时任务' },
 ];
 
@@ -40,7 +40,7 @@ interface BoardPageProps {
   searchParams: Promise<{ filter?: string | string[] }>;
 }
 
-/** 03 任务看板：顶行（标题 + 执行中会话数 + 新建任务）+ 筛选 Tab + 5 列看板。 */
+/** 03 任务看板：顶行（标题 + MCP 执行数 + 新建任务）+ 筛选 Tab + 5 列看板。 */
 export default async function BoardPage({ searchParams }: BoardPageProps) {
   const params = await searchParams;
   const filter = parseFilter(params.filter);
@@ -56,13 +56,13 @@ export default async function BoardPage({ searchParams }: BoardPageProps) {
           <p className="eyebrow">任务管理</p>
           <h1 className="page-title">任务看板</h1>
           <p className="page-sub">
-            {`${runningCount} 个会话执行中 · 拖拽卡片到目标列即可切换状态`}
+            {`${runningCount} 个 MCP 执行中 · 拖拽卡片到目标列即可切换状态`}
           </p>
         </div>
         <PlaceholderButton
           label="新建任务"
           variant="primary"
-          hint="本期为示例数据：真实场景将在这里打开新建任务表单（标题 / 优先级 / 交给谁执行）。"
+          hint="创建新任务，设置标题、优先级和执行方式（手动 / MCP / 定时）。当前为示例数据。"
         />
       </div>
 

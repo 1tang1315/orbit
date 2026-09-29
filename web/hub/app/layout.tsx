@@ -21,8 +21,8 @@ export default function RootLayout({ children }: { children: ReactNode }) {
   const syncText = formatRelative(getLatestSyncAt());
 
   return (
-    <html lang="zh-CN">
-      <body>
+    <html lang="zh-CN" suppressHydrationWarning>
+      <body suppressHydrationWarning>
         <AppShell projects={projects} syncText={syncText}>
           {children}
         </AppShell>

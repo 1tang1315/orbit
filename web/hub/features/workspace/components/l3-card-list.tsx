@@ -35,7 +35,7 @@ export function L3CardList({ cards }: L3CardListProps) {
           </div>
         ))
       ) : (
-        <p className="muted">还没有沉淀 L3 知识卡。</p>
+        <p className="muted">暂无 L3 知识卡 · 完成任务复盘后，可复用经验会自动提炼到这里。</p>
       )}
     </div>
   );

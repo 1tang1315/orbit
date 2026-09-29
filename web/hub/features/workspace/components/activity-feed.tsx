@@ -34,7 +34,7 @@ export function ActivityFeed({ activities }: ActivityFeedProps) {
           ))}
         </ul>
       ) : (
-        <p className="muted">最近没有新动态。</p>
+        <p className="muted">暂无新动态 · 接入仓库后，提交、文档和知识沉淀会实时出现在这里。</p>
       )}
     </div>
   );

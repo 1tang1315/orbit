@@ -1,3 +1,4 @@
+import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 
 import {
@@ -19,6 +20,12 @@ import { TabPanel } from '@/features/projects/components/tab-panel';
 interface ProjectPageProps {
   params: Promise<{ id: string }>;
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+}
+
+export async function generateMetadata({ params }: ProjectPageProps): Promise<Metadata> {
+  const { id } = await params;
+  const project = getProject(id);
+  return { title: project === null ? '项目详情' : project.name };
 }
 
 /**
@@ -62,7 +69,7 @@ export default async function ProjectDetailPage({ params, searchParams }: Projec
       {tab === 'docs' ? (
         <TabPanel>
           <Panel title="文档" note={`${docs.length} 篇`}>
-            <DocList docs={docs} emptyText="该项目还没有文档" />
+            <DocList docs={docs} emptyText="暂无文档 · 接入 AI 后将自动起草 L2 文档" />
           </Panel>
         </TabPanel>
       ) : null}

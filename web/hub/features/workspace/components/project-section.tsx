@@ -51,7 +51,7 @@ export function ProjectSection({ projects }: ProjectSectionProps) {
           ))}
         </div>
       ) : (
-        <p className="muted">尚未接入项目。</p>
+        <p className="muted">还没有接入项目 · 点击上方「接入仓库」开始连接 GitHub。</p>
       )}
     </section>
   );

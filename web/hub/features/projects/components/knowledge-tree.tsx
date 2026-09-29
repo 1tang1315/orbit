@@ -105,7 +105,7 @@ export function KnowledgeTree({ project, docs, cards }: KnowledgeTreeProps) {
             <TreeEntryRow key={entry.label} entry={entry} />
           ))
         ) : (
-          <div className="ghost-note">暂无 L2 文档</div>
+          <div className="ghost-note">暂无 L2 文档 · 接入 AI 后将自动起草，你确认后落库</div>
         )}
       </div>
 
@@ -116,7 +116,7 @@ export function KnowledgeTree({ project, docs, cards }: KnowledgeTreeProps) {
             <TreeEntryRow key={entry.label} entry={entry} />
           ))
         ) : (
-          <div className="ghost-note">暂无命中该项目的技术知识卡</div>
+          <div className="ghost-note">暂无关联的技术知识卡 · 完成复盘后会自动提炼</div>
         )}
       </div>
     </div>

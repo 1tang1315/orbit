@@ -22,7 +22,7 @@ export async function generateMetadata({ params }: TaskPageProps): Promise<Metad
   return { title: task === null ? '任务详情' : task.title };
 }
 
-/** 06 任务详情：左（处理阶段 / 会话执行 / 人机交接）+ 右（属性 / 关联 / 时间线 / 下一步 / 自动产出）。 */
+/** 06 任务详情：左（处理阶段 / MCP 执行 / 人机交接）+ 右（属性 / 关联 / 时间线 / 下一步 / 自动产出）。 */
 export default async function TaskPage({ params }: TaskPageProps) {
   const { id } = await params;
   const task = await getTask(id);
@@ -61,7 +61,7 @@ export default async function TaskPage({ params }: TaskPageProps) {
           )}
           {!hasLeftBlocks && (
             <p className="ghost-note">
-              这条任务还没有处理阶段、会话执行与人机交接记录。
+              任务尚未开始执行 · 指定执行者后，处理阶段、MCP 日志和人机交接记录会自动填充。
             </p>
           )}
         </div>

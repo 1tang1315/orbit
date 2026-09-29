@@ -30,7 +30,7 @@ export function StageColumn({ column }: StageColumnProps) {
       </header>
 
       {column.artifacts.length === 0 ? (
-        <div className="ghost-note">暂无产物</div>
+        <div className="ghost-note">该阶段暂无产物</div>
       ) : (
         column.artifacts.map((artifact) => (
           <ArtifactCard key={artifact.id} artifact={artifact} disabled={column.readonly} />
@@ -41,13 +41,13 @@ export function StageColumn({ column }: StageColumnProps) {
         <div className="pipe-manual-confirm">
           <PlaceholderButton
             label="待人工确认"
-            hint="本期为示例数据，真实链路将在这里发起人工收口确认。"
+            hint="发起人工收口确认，验证修复结果后关闭工作项。当前为示例数据。"
           />
         </div>
       )}
 
       <ArtifactAddButton
-        hint="本期为示例数据，真实链路将在这里新增产物并写回流水线。"
+        hint="新增产物到当前阶段，写回流水线。当前为示例数据。"
         disabled={column.readonly}
       />
     </section>

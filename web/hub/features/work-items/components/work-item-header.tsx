@@ -69,7 +69,7 @@ export function WorkItemHeader({ workItem, project, links }: WorkItemHeaderProps
 
       <PlaceholderButton
         label="沉淀到知识库"
-        hint="本期为示例数据，真实链路将在这里把已确认的产物沉淀到知识库。"
+        hint="将已确认的产物沉淀到知识库，生成 L2 文档或 L3 知识卡。当前为示例数据。"
         variant="primary"
       />
     </header>

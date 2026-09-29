@@ -47,12 +47,12 @@ export function ReviewStage({ data }: ReviewStageProps) {
           ) : (
             <div className="review-empty">
               <p className="review-empty-title">
-                {total > 0 ? '今日复习已完成 🎉' : '今天没有到期的卡片'}
+                {total > 0 ? '今日复习已完成 🎉' : '暂无到期卡片'}
               </p>
               <p className="review-empty-note">
                 {total > 0
-                  ? `今日 ${total} 张卡已全部掌握，明天再来巩固。`
-                  : '暂无到期复习，去知识库看看新的 L2 文档吧。'}
+                  ? `${total} 张知识卡已全部掌握，明天继续巩固。`
+                  : '当前没有需要复习的知识卡，去知识库看看有没有新的 L2 文档吧。'}
               </p>
             </div>
           )}

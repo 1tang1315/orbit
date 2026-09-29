@@ -1,3 +1,4 @@
+import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 
 import { getWorkItemDetail, listWorkItemLinks } from '@/features/work-items/actions';
@@ -6,6 +7,12 @@ import { WorkItemPipeline } from '@/features/work-items/components/work-item-pip
 interface WorkItemPageProps {
   /** Next 16：动态段 params 是 Promise，必须 await。 */
   params: Promise<{ id: string }>;
+}
+
+export async function generateMetadata({ params }: WorkItemPageProps): Promise<Metadata> {
+  const { id } = await params;
+  const detail = await getWorkItemDetail(id);
+  return { title: detail === null ? '工作项' : detail.workItem.title };
 }
 
 /**

@@ -29,7 +29,7 @@ export function ReviewQueueCard({ tasks }: ReviewQueueCardProps) {
           </div>
         ))
       ) : (
-        <p className="muted">没有待复盘的任务。</p>
+        <p className="muted">所有任务都已归档 · 新的复盘任务会在这里出现。</p>
       )}
     </div>
   );

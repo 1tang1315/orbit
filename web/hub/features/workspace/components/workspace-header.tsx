@@ -26,11 +26,11 @@ export function WorkspaceHeader({ projectCount }: WorkspaceHeaderProps) {
         <PlaceholderButton
           label="接入仓库"
           variant="primary"
-          hint="本期为示例数据：真实 GitHub 仓库扫描与接入不在本期范围，将在后续里程碑接入。"
+          hint="连接 GitHub 仓库后，系统将自动拉取代码、分析架构并生成 L1 事实层。当前为示例数据，后续里程碑开放。"
         />
         <PlaceholderButton
           label="生成周报"
-          hint="本期为示例数据：周报依赖 AI 报告生成链路，不在本期范围，将在后续里程碑接入。"
+          hint="基于项目动态与知识沉淀，一键生成项目周报。当前为示例数据，后续里程碑开放。"
         />
       </div>
     </header>

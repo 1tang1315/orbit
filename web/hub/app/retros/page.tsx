@@ -23,7 +23,7 @@ export default function RetrosPage() {
         {rows.length > 0 ? (
           rows.map((row) => <DocListItem key={row.id} row={row} />)
         ) : (
-          <p className="list-empty">暂无复盘报告，完成任务后会自动生成复盘草稿。</p>
+          <p className="list-empty">暂无复盘报告 · 任务完成后，MCP 会自动生成复盘草稿，你确认后归档到这里。</p>
         )}
       </div>
     </section>

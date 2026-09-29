@@ -24,7 +24,7 @@ export default function LibraryPage() {
         {rows.length > 0 ? (
           rows.map((row) => <DocListItem key={row.id} row={row} />)
         ) : (
-          <p className="list-empty">知识库还是空的，接入仓库并扫描后会自动生成 L2 文档。</p>
+          <p className="list-empty">知识库暂无内容 · 接入仓库后，L1 事实层会自动采集，AI 起草的 L2 文档经你确认后落库。</p>
         )}
       </div>
     </section>

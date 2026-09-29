@@ -18,7 +18,7 @@ const STATUS_LABELS: Record<TaskStatus, string> = {
 
 const HANDLER_LABELS: Record<TaskHandler, string> = {
   me: '你',
-  session: '会话执行',
+  session: 'MCP 执行',
   cron: '定时任务',
 };
 
@@ -48,22 +48,22 @@ function buildNextSteps(task: Task): string[] {
     case 'planned':
       return [
         '补充任务细节，把状态推进到「待办」',
-        '指定交给会话执行，或等定时任务到点领取',
+        '指定交给 MCP 执行，或等定时任务到点调用',
         '执行中的关键决策会生成人机交接卡等你确认',
         '完成后进入「待复盘」，自动起草复盘草稿',
       ];
     case 'todo':
       return [
-        '会话按队列领取任务，开始执行',
-        '步骤日志会实时回传到本页会话执行卡',
+        'MCP 按队列领取任务，开始执行',
+        '步骤日志会实时回传到本页 MCP 执行卡',
         '遇到需要你拍板的点，会弹出人机交接卡',
         '全部步骤完成后状态推进到「待复盘」',
       ];
     case 'doing':
       return [
-        '会话继续推进处理阶段，步骤日志持续更新',
+        'MCP 继续推进处理阶段，步骤日志持续更新',
         '关键决策生成人机交接卡，等你采纳或修改',
-        '暂存区改动先落在会话沙箱，不直接进主干',
+        '暂存区改动先由外部 MCP 服务隔离，不直接进主干',
         '执行完成后状态推进到「待复盘」',
       ];
     case 'review':
@@ -160,17 +160,17 @@ export function TaskAside({ task, session }: TaskAsideProps) {
             )}
             {task.sessionId !== null && (
               <div className="prop-row">
-                <dt>会话</dt>
+                <dt>MCP 执行</dt>
                 <dd>
                   {session !== null && session.id === task.sessionId
-                    ? `会话 #${session.no}`
-                    : `会话 ${task.sessionId}`}
+                    ? `MCP 执行 #${session.no}`
+                    : `MCP 执行 ${task.sessionId}`}
                 </dd>
               </div>
             )}
           </dl>
         ) : (
-          <p className="ghost-note">暂无关联的 Issue、工作项或会话。</p>
+          <p className="ghost-note">暂无关联项 · 从 Issue 导入或关联工作项后会自动显示。</p>
         )}
       </section>
 
