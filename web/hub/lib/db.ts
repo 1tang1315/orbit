@@ -1,5 +1,6 @@
 import { DatabaseSync } from 'node:sqlite';
 import { mkdirSync } from 'node:fs';
+import { randomUUID } from 'node:crypto';
 import path from 'node:path';
 
 // ============================================================
@@ -796,6 +797,145 @@ export function advanceTaskChecklist(id: string): void {
   }
   db.prepare('UPDATE tasks SET checklist = ?, updated_at = ? WHERE id = ?')
     .run(JSON.stringify(steps), new Date().toISOString(), id);
+}
+
+// endregion
+
+// region 写操作（MCP 服务的外部 Agent 回写入口）
+
+/**
+ * 外部 Agent（MCP）创建任务：source 固定为 'ai'，项目必须已存在。
+ *
+ * handler 缺省 'me'（交给人确认），'cron'/'session' 表示排期给自动执行；
+ * checklist 只收 title/note，state 由中枢统一从 'todo' 起步。
+ */
+export interface AgentTaskDraft {
+  projectId: string;
+  title: string;
+  priority?: number;
+  handler?: TaskHandler;
+  meta?: string;
+  checklist?: { title: string; note?: string }[];
+}
+
+export function createAgentTask(draft: AgentTaskDraft): Task {
+  const db = getDb();
+  const project = db.prepare('SELECT id FROM projects WHERE id = ?').get(draft.projectId) as
+    | { id: string }
+    | undefined;
+  if (!project) {
+    throw new Error(`项目「${draft.projectId}」不存在，无法创建任务`);
+  }
+  const seqRow = db.prepare('SELECT MAX(seq) AS m FROM tasks').get() as { m: number | null };
+  const seq = (seqRow.m ?? 0) + 1;
+  const id = `task-${randomUUID().slice(0, 8)}`;
+  const now = new Date().toISOString();
+  const checklist: ChecklistStep[] | null = draft.checklist?.length
+    ? draft.checklist.map((step, index) => ({
+        title: step.title,
+        state: index === 0 ? 'current' : 'todo',
+        note: step.note ?? '',
+      }))
+    : null;
+  db.prepare(
+    `INSERT INTO tasks (
+      id, seq, project_id, title, priority, source, status, issue_no, flags,
+      session_id, work_item_id, handler, meta, in_review_queue, owned,
+      checklist, timeline, created_at, updated_at
+    ) VALUES (?, ?, ?, ?, ?, 'ai', 'todo', NULL, ?, NULL, NULL, ?, ?, 0, 0, ?, NULL, ?, ?)`,
+  ).run(
+    id,
+    seq,
+    draft.projectId,
+    draft.title,
+    Math.max(1, Math.min(3, draft.priority ?? 1)),
+    JSON.stringify([{ text: 'AI 生成', tone: 'accent' }]),
+    draft.handler ?? 'me',
+    draft.meta ?? '',
+    checklist === null ? null : JSON.stringify(checklist),
+    now,
+    now,
+  );
+  return getTask(id) as Task;
+}
+
+/** 记录一条动态流（外部 Agent 的分析结论 / 复盘 / 归类建议）。 */
+export function addAgentActivity(input: {
+  projectId: string | null;
+  kind: ActivityKind;
+  title: string;
+  meta?: string;
+  sourceLabel?: string;
+  href?: string | null;
+}): Activity {
+  const db = getDb();
+  const id = `act-${randomUUID().slice(0, 8)}`;
+  db.prepare(
+    `INSERT INTO activity (id, project_id, kind, title, meta, source_label, occurred_at, href)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+  ).run(
+    id,
+    input.projectId,
+    input.kind,
+    input.title,
+    input.meta ?? '',
+    input.sourceLabel || 'AI 分析',
+    new Date().toISOString(),
+    input.href ?? null,
+  );
+  const row = db.prepare('SELECT * FROM activity WHERE id = ?').get(id) as Row;
+  return toActivity(row);
+}
+
+/** 落一篇 L2 知识文档（外部 Agent 整理的项目知识，默认草稿待确认）。 */
+export function addAgentKnowledgeDoc(input: {
+  projectId: string;
+  kind: string;
+  title: string;
+  meta: string;
+}): KnowledgeDoc {
+  const db = getDb();
+  if (!db.prepare('SELECT id FROM projects WHERE id = ?').get(input.projectId)) {
+    throw new Error(`项目「${input.projectId}」不存在，无法沉淀知识`);
+  }
+  const id = `doc-${randomUUID().slice(0, 8)}`;
+  db.prepare(
+    `INSERT INTO knowledge_docs (id, project_id, kind, title, status, meta, created_at)
+     VALUES (?, ?, ?, ?, '草稿', ?, ?)`,
+  ).run(id, input.projectId, input.kind, input.title, input.meta, new Date().toISOString());
+  const row = db.prepare('SELECT * FROM knowledge_docs WHERE id = ?').get(id) as Row;
+  return toDoc(row);
+}
+
+/** 落一张 L3 知识卡，默认进入今日复习队列（外部 Agent 提炼的跨项目知识）。 */
+export function addAgentKnowledgeCard(input: {
+  title: string;
+  summary: string;
+  hitProjects: string[];
+  kind?: string;
+  originProject?: string | null;
+}): KnowledgeCard {
+  const db = getDb();
+  const id = `card-${randomUUID().slice(0, 8)}`;
+  const seqRow = db.prepare('SELECT MAX(sort_order) AS m FROM knowledge_cards').get() as {
+    m: number | null;
+  };
+  db.prepare(
+    `INSERT INTO knowledge_cards (
+      id, title, summary, hit_projects, origin_project, kind,
+      mastered, review_state, due_today, sort_order
+    ) VALUES (?, ?, ?, ?, ?, ?, 0, 'pending', 1, ?)`,
+  ).run(
+    id,
+    input.title,
+    input.summary,
+    JSON.stringify(input.hitProjects),
+    input.originProject ?? null,
+    input.kind ?? '技术栈知识',
+    (seqRow.m ?? 0) + 1,
+  );
+  const row = db.prepare('SELECT * FROM knowledge_cards WHERE id = ?').get(id) as Row;
+  return toCard(row);
 }
 
 // endregion
