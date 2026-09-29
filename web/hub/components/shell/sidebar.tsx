@@ -13,14 +13,7 @@ import {
   IconRetro,
 } from '@/components/ui/icons';
 
-export interface SidebarProject {
-  id: string;
-  name: string;
-  color: string;
-}
-
 export interface SidebarProps {
-  projects: SidebarProject[];
   syncText: string;
 }
 
@@ -32,25 +25,27 @@ interface NavEntry {
 }
 
 const WORKSPACE_NAV: NavEntry[] = [
-  { href: '/', label: '动态流', icon: IconPulse, exact: true },
-  { href: '/projects', label: '项目', icon: IconGrid },
+  { href: '/feed', label: '动态流', icon: IconPulse },
+  { href: '/', label: '项目', icon: IconGrid, exact: true },
   { href: '/library', label: '知识库', icon: IconBook },
   { href: '/board', label: '任务看板', icon: IconBoard },
   { href: '/tech-stack', label: '技术栈知识', icon: IconChip },
   { href: '/retros', label: '复盘报告', icon: IconRetro },
 ];
 
-/** 左侧栏：工作区分组 + 项目分组 + 底部连接状态卡。 */
-export function Sidebar({ projects, syncText }: SidebarProps) {
+/**
+ * 左侧栏：工作区分组导航 + 底部连接状态卡。
+ *
+ * 「项目」指向首页的项目总览网格（含项目详情页的高亮），
+ * 动态流独立为 /feed，侧栏不再单列每个项目。
+ */
+export function Sidebar({ syncText }: SidebarProps) {
   const pathname = usePathname();
-  const firstProject = projects[0]?.id ?? 'sk-mind';
 
   const isActive = (entry: NavEntry): boolean => {
-    if (entry.href === '/projects') {
-      return pathname.startsWith('/projects');
-    }
     if (entry.exact) {
-      return pathname === entry.href;
+      // 「项目」覆盖首页总览与项目详情页（/projects/[id]）的高亮。
+      return pathname === '/' || pathname.startsWith('/projects');
     }
     return pathname === entry.href;
   };
@@ -70,11 +65,10 @@ export function Sidebar({ projects, syncText }: SidebarProps) {
         <div className="nav-group-label">工作区</div>
         {WORKSPACE_NAV.map((entry) => {
           const Icon = entry.icon;
-          const href = entry.href === '/projects' ? `/projects/${firstProject}` : entry.href;
           return (
             <Link
               key={entry.href}
-              href={href}
+              href={entry.href}
               className={`nav-item${isActive(entry) ? ' is-active' : ''}`}
             >
               <span className="nav-item-icon">
@@ -86,24 +80,10 @@ export function Sidebar({ projects, syncText }: SidebarProps) {
         })}
       </nav>
 
-      <nav className="nav-group" aria-label="项目">
-        <div className="nav-group-label">项目</div>
-        {projects.map((project) => (
-          <Link
-            key={project.id}
-            href={`/projects/${project.id}`}
-            className={`nav-item nav-project${pathname === `/projects/${project.id}` ? ' is-active' : ''}`}
-          >
-            <span className="nav-dot" style={{ backgroundColor: project.color }} />
-            {project.name}
-          </Link>
-        ))}
-      </nav>
-
       <div className="sidebar-status">
         <p>
           <span className="status-dot" />
-          GitHub 已连接 ·
+          数据已同步 ·
           {' '}
           {syncText}
         </p>

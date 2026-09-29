@@ -36,9 +36,9 @@ export function getHomeStats(): WorkspaceStats {
   return getWorkspaceStats();
 }
 
-/** 首页项目卡：getProjects 已按最近同步倒序，只取前 limit 个（蓝本为 2 张）。 */
-export function getHomeProjects(limit = 2): Project[] {
-  return getProjects().slice(0, limit);
+/** 首页项目总览：getProjects 已按最近同步倒序，全量返回（电商式网格）。 */
+export function getOverviewProjects(): Project[] {
+  return getProjects();
 }
 
 /** 最近动态：按发生时间倒序取前 limit 条。 */

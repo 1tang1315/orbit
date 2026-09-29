@@ -93,3 +93,125 @@
     border-color: var(--muted);
   }
 }
+
+// ------------------------------------------------------------
+// 首页项目总览（电商式流式网格）
+// ------------------------------------------------------------
+
+// auto-fill + minmax：卡片随内容区宽度自适应换行，项目多时自然流式。
+.gallery-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 16px;
+}
+
+// 商品卡：无边距让封面出血到卡边，悬停轻微上浮 + 阴影。
+.gallery-card {
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  overflow: hidden;
+  transition: border-color 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
+
+  &:hover {
+    border-color: var(--muted);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 18px rgb(55 53 47 / 8%);
+  }
+}
+
+// 封面带：项目色渐变（色值由行内 style 传入，透明度后缀拼 hex alpha）。
+.gallery-cover {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  padding: 18px 20px;
+}
+
+// 首字母头像：白字方圆角，底色即项目色。
+.gallery-avatar {
+  display: inline-flex;
+  flex: none;
+  width: 40px;
+  height: 40px;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  font-weight: 700;
+  color: #fff;
+  border-radius: 10px;
+}
+
+.gallery-cover-repo {
+  font-size: 12px;
+  color: var(--muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+// 卡身：纵向排布，统计行 margin-top:auto 贴底，多卡高度一致。
+.gallery-body {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px 20px 16px;
+}
+
+.gallery-name {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.gallery-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+// 三格迷你统计：数值加粗放大，标签用 muted 小字。
+.gallery-stats {
+  display: flex;
+  gap: 20px;
+  margin-top: auto;
+  padding-top: 12px;
+  border-top: 1px dashed var(--border);
+}
+
+.gallery-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 12px;
+  color: var(--muted);
+
+  b {
+    font-size: 16px;
+    color: var(--ink);
+  }
+}
+
+// 卡底行：同步时间左、箭头右。
+.gallery-foot {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.gallery-foot-arrow {
+  display: inline-flex;
+  color: var(--muted);
+  transition: transform 0.15s ease;
+
+  .gallery-card:hover & {
+    color: var(--ink);
+    transform: translateX(2px);
+  }
+}

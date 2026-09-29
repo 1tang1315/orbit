@@ -3,7 +3,7 @@ import type { ReactNode } from 'react';
 
 import { AppShell } from '@/components/shell/app-shell';
 import { formatRelative } from '@/components/ui/format';
-import { getLatestSyncAt, getProjects } from '@/lib/db';
+import { getLatestSyncAt } from '@/lib/db';
 
 import './globals.scss';
 import './tw.css';
@@ -17,13 +17,12 @@ export const metadata: Metadata = {
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {
-  const projects = getProjects().map(({ id, name, color }) => ({ id, name, color }));
   const syncText = formatRelative(getLatestSyncAt());
 
   return (
     <html lang="zh-CN" suppressHydrationWarning>
       <body suppressHydrationWarning>
-        <AppShell projects={projects} syncText={syncText}>
+        <AppShell syncText={syncText}>
           {children}
         </AppShell>
       </body>
