@@ -1,0 +1,154 @@
+// ============================================================
+// 「GitHub 接入」专属样式：连接卡、仓库行与导入按钮区。
+// 颜色一律引用设计令牌变量，不在本文件散落裸色值。
+// ============================================================
+
+// 卡片标题行：状态点 + 「GitHub 账户接入」，与右侧 @login chip 呼应。
+.gh-card-head {
+  display: inline-flex;
+  gap: 8px;
+  align-items: center;
+}
+
+// 未连接时的状态点：错误红（默认 status-dot 为绿色可用态）。
+.gh-dot-off {
+  background-color: var(--bug);
+}
+
+// 仓库列表容器：行内滚动，仓库多时不把首页撑爆。
+.gh-repo-list {
+  max-height: 360px;
+  overflow-y: auto;
+}
+
+// 卡片头部右侧工具组：@login chip + 筛选下拉。
+.gh-card-tools {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+// 筛选下拉（全部 / 组织 / 个人 / 按组织）：与 chip 同高的紧凑控件。
+.gh-filter-select {
+  height: 26px;
+  padding: 0 8px;
+  font-size: 13px;
+  color: var(--ink);
+  background-color: var(--fill);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  cursor: pointer;
+
+  &:focus {
+    border-color: var(--muted);
+    outline: none;
+  }
+}
+
+// 仓库行列表：去默认缩进与圆点；行间分隔线贴合容器内边距。
+.gh-rows {
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+.gh-repo-row {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: 12px 0;
+
+  & + & {
+    border-top: 1px solid var(--border);
+  }
+}
+
+.gh-repo-main {
+  min-width: 0;
+}
+
+.gh-repo-title {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.gh-repo-name {
+  font-weight: 600;
+  color: var(--ink);
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+.gh-repo-desc {
+  margin: 4px 0 0;
+  font-size: 13px;
+  color: var(--muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+// 行右侧：推送时间 + 导入按钮，纵向对齐不参与换行。
+.gh-repo-side {
+  display: flex;
+  flex: none;
+  gap: 12px;
+  align-items: center;
+}
+
+.gh-repo-pushed {
+  font-size: 13px;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+// 导入按钮与其行内错误提示纵向堆叠，错误不挤压仓库行高度。
+.gh-import-cell {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 4px;
+  align-items: flex-end;
+}
+
+.gh-import-btn {
+  height: 32px;
+  padding: 0 14px;
+}
+
+.gh-import-error {
+  max-width: 220px;
+  font-size: 12px;
+  color: var(--bug);
+  text-align: right;
+}
+
+// 未连接时的指引块：错误原因红字置顶，步骤用有序列表。
+.gh-connect-hint {
+  margin: 0;
+}
+
+.gh-connect-error {
+  padding: 10px 14px;
+  margin: 0 0 12px;
+  font-size: 13px;
+  color: var(--bug);
+  background-color: var(--bug-soft);
+  border-radius: var(--radius-control);
+}
+
+.gh-connect-steps {
+  max-width: 560px;
+  padding-left: 18px;
+  margin: 0;
+  font-size: 14px;
+  color: var(--ink);
+
+  li + li {
+    margin-top: 6px;
+  }
+}

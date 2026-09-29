@@ -621,6 +621,12 @@ export function getProject(id: string): Project | null {
   return row ? toProject(row) : null;
 }
 
+/** 已接入项目的 GitHub 仓库全名集合（owner/repo），用于仓库列表标记「已导入」。 */
+export function getProjectRepos(): string[] {
+  const rows = getDb().prepare('SELECT repo FROM projects').all() as { repo: string }[];
+  return rows.map((row) => row.repo);
+}
+
 /** 工作区四张统计卡：接入项目 / L2 / L3 / 待复盘。 */
 export function getWorkspaceStats(): WorkspaceStats {
   const db = getDb();
@@ -764,6 +770,45 @@ export function getLatestSyncAt(): string {
 // endregion
 
 // region 写操作（Server Actions 的落库入口）
+
+/** 从 GitHub 导入项目所需的最低字段；其余列落默认值，等后续同步补齐。 */
+export interface GithubProjectDraft {
+  name: string;
+  repo: string;
+  color: string;
+  stack: string[];
+}
+
+/**
+ * 按 GitHub 仓库全名导入一个项目：id 取「owner-repo」slug，仓库唯一。
+ *
+ * 已存在同 repo 的项目时不动任何数据，返回 'exists' 由调用方提示；
+ * commits / arch / 各计数先置空，待真实仓库扫描（/api/sync）回填。
+ */
+export function createGithubProject(draft: GithubProjectDraft): 'created' | 'exists' {
+  const db = getDb();
+  const existing = db.prepare('SELECT id FROM projects WHERE repo = ?').get(draft.repo) as
+    | { id: string }
+    | undefined;
+  if (existing) {
+    return 'exists';
+  }
+  const id = draft.repo.toLowerCase().replace('/', '-');
+  db.prepare(
+    `INSERT INTO projects (
+      id, name, repo, color, stack, arch, commits,
+      commit_count, l1_count, l2_count, l3_count, deps_count, branch_count, last_synced_at
+    ) VALUES (?, ?, ?, ?, ?, '[]', '[]', 0, 0, 0, 0, 0, 0, ?)`,
+  ).run(
+    id,
+    draft.name,
+    draft.repo,
+    draft.color,
+    JSON.stringify(draft.stack),
+    new Date().toISOString(),
+  );
+  return 'created';
+}
 
 /**
  * 将任务移动到看板指定列（拖拽落库）。
