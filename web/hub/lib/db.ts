@@ -1,11 +1,12 @@
 import { DatabaseSync } from 'node:sqlite';
-import { mkdirSync, readFileSync } from 'node:fs';
+import { mkdirSync } from 'node:fs';
 import path from 'node:path';
 
 // ============================================================
-// 数据层：node:sqlite 连接单例、建表、seed 装载与查询。
+// 数据层：node:sqlite 连接单例、建表与查询。
 // 所有 snake_case 列 → camelCase 字段的映射集中在此文件；
 // 业务代码只拿 UI 模型，不接触原始行（开发规范 01 §1.5）。
+// 项目数据一律来自 GitHub 导入与同步，不再装载示例 seed。
 // ============================================================
 
 // region UI 模型（跨业务域共享，放 lib 层）
@@ -26,8 +27,13 @@ export interface ArchNode {
 export interface CommitItem {
   hash: string;
   message: string;
-  branch: string;
+  /** 所属分支（seed 数据有值；GitHub commits API 不返回分支，同步数据为空）。 */
+  branch?: string;
   at: string;
+  /** 提交作者（GitHub 同步数据才有，seed 数据可为空）。 */
+  author?: string;
+  /** GitHub 提交详情页链接（同步数据才有）。 */
+  url?: string;
 }
 
 export interface Project {
@@ -198,7 +204,6 @@ export interface WorkspaceStats {
 
 const DATA_DIR = path.join(process.cwd(), '.data');
 const DB_PATH = path.join(DATA_DIR, 'hub.sqlite');
-const SEED_DIR = path.join(process.cwd(), 'lib', 'seed');
 
 interface DbHolder {
   __hubDb?: DatabaseSync;
@@ -342,116 +347,8 @@ function getDb(): DatabaseSync {
   mkdirSync(DATA_DIR, { recursive: true });
   const db = new DatabaseSync(DB_PATH);
   db.exec(SCHEMA);
-  seedIfEmpty(db);
   holder.__hubDb = db;
   return db;
-}
-
-// endregion
-
-// region seed 装载
-
-type SeedRow = Record<string, unknown>;
-
-function readSeed(name: string): SeedRow[] {
-  const raw = readFileSync(path.join(SEED_DIR, name), 'utf-8');
-  return JSON.parse(raw) as SeedRow[];
-}
-
-/** 相对分钟数 → UTC ISO（seed 里用 ago_min 表达「2 分钟前」这类相对时间）。 */
-function resolveAgo(value: unknown): string {
-  const minutes = typeof value === 'number' ? value : 0;
-  return new Date(Date.now() - minutes * 60_000).toISOString();
-}
-
-function insertRows(
-  db: DatabaseSync,
-  table: string,
-  rows: SeedRow[],
-  columns: string[],
-  jsonColumns: string[] = [],
-): void {
-  const stmt = db.prepare(
-    `INSERT INTO ${table} (${columns.join(', ')}) VALUES (${columns.map(() => '?').join(', ')})`,
-  );
-  for (const row of rows) {
-    const values = columns.map((column) => {
-      const value = row[column] ?? null;
-      return jsonColumns.includes(column) ? JSON.stringify(value ?? []) : value;
-    });
-    stmt.run(...(values as never[]));
-  }
-}
-
-function seedIfEmpty(db: DatabaseSync): void {
-  const count = db.prepare('SELECT COUNT(*) AS n FROM projects').get() as { n: number };
-  if (count.n > 0) {
-    return;
-  }
-
-  // projects：相对时间在装载时解析为 UTC ISO
-  const projects = readSeed('projects.json').map((row) => ({
-    ...row,
-    last_synced_at: resolveAgo(row.last_synced_ago_min),
-    commits: (row.commits as SeedRow[]).map((commit) => ({
-      hash: commit.hash,
-      message: commit.message,
-      branch: commit.branch,
-      at: resolveAgo(commit.ago_min),
-    })),
-  }));
-  insertRows(db, 'projects', projects, [
-    'id', 'name', 'repo', 'color', 'stack', 'arch', 'commits',
-    'commit_count', 'l1_count', 'l2_count', 'l3_count', 'deps_count',
-    'branch_count', 'last_synced_at',
-  ], ['stack', 'arch', 'commits']);
-
-  const activity = readSeed('activity.json').map((row) => ({
-    ...row,
-    occurred_at: resolveAgo(row.ago_min),
-  }));
-  insertRows(db, 'activity', activity, [
-    'id', 'project_id', 'kind', 'title', 'meta', 'source_label', 'occurred_at', 'href',
-  ]);
-
-  const tasks = readSeed('tasks.json').map((row) => ({
-    ...row,
-    updated_at: row.created_at,
-    in_review_queue: row.in_review_queue ? 1 : 0,
-    owned: row.owned ? 1 : 0,
-  }));
-  insertRows(db, 'tasks', tasks, [
-    'id', 'seq', 'project_id', 'title', 'priority', 'source', 'status', 'issue_no',
-    'flags', 'session_id', 'work_item_id', 'handler', 'meta', 'in_review_queue',
-    'owned', 'checklist', 'timeline', 'created_at', 'updated_at',
-  ], ['flags', 'checklist', 'timeline']);
-
-  insertRows(db, 'work_items', readSeed('work-items.json'), [
-    'id', 'seq', 'project_id', 'title', 'source_type', 'stage', 'issue_no',
-    'session_no', 'owner', 'created_at', 'stages',
-  ], ['stages']);
-
-  insertRows(db, 'work_artifacts', readSeed('work-artifacts.json'), [
-    'id', 'work_item_id', 'stage', 'sort_order', 'kind', 'title', 'meta',
-    'tag_tone', 'highlight', 'show_actions', 'confirm_state',
-  ]);
-
-  insertRows(db, 'knowledge_docs', readSeed('knowledge-docs.json'), [
-    'id', 'project_id', 'kind', 'title', 'status', 'meta', 'created_at',
-  ]);
-
-  insertRows(db, 'knowledge_cards', readSeed('knowledge-cards.json'), [
-    'id', 'title', 'summary', 'hit_projects', 'origin_project', 'kind',
-    'mastered', 'review_state', 'due_today', 'sort_order',
-  ]);
-
-  insertRows(db, 'sessions', readSeed('sessions.json'), [
-    'id', 'no', 'task_id', 'status', 'queue', 'elapsed_min', 'steps', 'changes',
-  ], ['steps', 'changes']);
-
-  insertRows(db, 'confirmations', readSeed('confirmations.json'), [
-    'id', 'ref_type', 'ref_id', 'question', 'body', 'state',
-  ]);
 }
 
 // endregion
@@ -808,6 +705,31 @@ export function createGithubProject(draft: GithubProjectDraft): 'created' | 'exi
     new Date().toISOString(),
   );
   return 'created';
+}
+
+/**
+ * 用 GitHub 同步到的真实提交与分支数据回填一个项目。
+ *
+ * commit_count 记录的是已拉取的提交条数（与 commits 列一致），
+ * 分支数量来自 branches API；last_synced_at 刷新为当前时间。
+ */
+export function updateProjectGitData(
+  id: string,
+  data: { commits: CommitItem[]; branchCount: number },
+): void {
+  getDb()
+    .prepare(
+      `UPDATE projects SET
+        commits = ?, commit_count = ?, branch_count = ?, last_synced_at = ?
+      WHERE id = ?`,
+    )
+    .run(
+      JSON.stringify(data.commits),
+      data.commits.length,
+      data.branchCount,
+      new Date().toISOString(),
+      id,
+    );
 }
 
 /**
