@@ -71,3 +71,38 @@
   color: var(--ink);
   text-decoration: none;
 }
+
+// 提交历史 Tab：分支筛选下拉 + 同步按钮的工具行
+.panel-toolbar {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  justify-content: flex-end;
+  margin-bottom: 8px;
+}
+
+// 分支筛选下拉（全部分支 / 各分支）：与 GitHub 卡的筛选控件同一观感
+.branch-filter-select {
+  height: 26px;
+  padding: 0 8px;
+  font-size: 13px;
+  color: var(--ink);
+  background-color: var(--fill);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  cursor: pointer;
+
+  &:focus {
+    border-color: var(--muted);
+    outline: none;
+  }
+}
+
+// GitHub 同步提交的短 hash 链接
+.commit-meta a {
+  color: var(--l1);
+
+  &:hover {
+    text-decoration: underline;
+  }
+}

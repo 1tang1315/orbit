@@ -1,3 +1,5 @@
+import type { GithubCommit } from '@/features/github/actions';
+
 import type { KnowledgeCard, KnowledgeDoc, Project } from '@/features/projects/actions';
 
 import { ArchDiagram } from './arch-diagram';
@@ -11,6 +13,8 @@ export interface ProjectOverviewProps {
   project: Project;
   docs: KnowledgeDoc[];
   cards: KnowledgeCard[];
+  /** GitHub 实时最近提交（页面级拉取失败时为 null，回退本地缓存）。 */
+  liveCommits?: GithubCommit[] | null;
 }
 
 /** 概览「最近文档」条数。 */
@@ -21,8 +25,9 @@ const RECENT_COMMIT_LIMIT = 5;
 /**
  * 屏 02 概览 Tab：知识树（左栏）+ 架构图卡 / 最近文档 / 最近提交（右栏）。
  */
-export function ProjectOverview({ project, docs, cards }: ProjectOverviewProps) {
+export function ProjectOverview({ project, docs, cards, liveCommits = null }: ProjectOverviewProps) {
   const base = `/projects/${project.id}`;
+  const recentCommits = liveCommits ?? project.commits;
   return (
     <div className="project-cols">
       <Panel
@@ -41,10 +46,10 @@ export function ProjectOverview({ project, docs, cards }: ProjectOverviewProps) 
 
         <Panel
           title="最近提交"
-          note={`${project.commitCount} 条`}
+          note={liveCommits ? `GitHub 实时 · ${liveCommits.length} 条` : `${project.commitCount} 条`}
           more={{ href: `${base}?tab=commits` }}
         >
-          <CommitList commits={project.commits.slice(0, RECENT_COMMIT_LIMIT)} />
+          <CommitList commits={recentCommits.slice(0, RECENT_COMMIT_LIMIT)} />
         </Panel>
       </div>
     </div>

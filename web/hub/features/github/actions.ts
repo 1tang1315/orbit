@@ -36,6 +36,23 @@ export interface GithubRepo {
   imported: boolean;
 }
 
+/** GitHub 真实提交（/repos/{repo}/commits 的 UI 模型）。 */
+export interface GithubCommit {
+  hash: string;
+  message: string;
+  /** 提交作者展示名（优先登录名，缺省取提交信息里的名字）。 */
+  author: string;
+  at: string;
+  url: string;
+}
+
+/** GitHub 分支（/repos/{repo}/branches 的 UI 模型）。 */
+export interface GithubBranch {
+  name: string;
+  /** 分支最新提交的短 hash，用于展示。 */
+  headHash: string;
+}
+
 // endregion
 
 // region REST API 访问（仅服务端）
@@ -45,6 +62,8 @@ const API_BASE = 'https://api.github.com';
 // （首页已用 Suspense 把该调用隔离在卡片内，不阻塞首屏）。
 const FETCH_TIMEOUT_MS = 30_000;
 const PAGE_SIZE = 100;
+/** 提交历史一次拉取的条数（commits API 单页上限 100）。 */
+const DEFAULT_COMMIT_LIMIT = 100;
 
 /** GitHub 调用失败统一走本错误；message 为可直接展示的中文。 */
 class GithubError extends Error {
@@ -58,6 +77,22 @@ class GithubError extends Error {
 
 interface GithubApiUser {
   login: string;
+}
+
+interface GithubApiCommit {
+  sha: string;
+  html_url: string;
+  commit: {
+    message: string;
+    author: { name: string; date: string } | null;
+    committer: { name: string; date: string } | null;
+  };
+  author: { login: string } | null;
+}
+
+interface GithubApiBranch {
+  name: string;
+  commit: { sha: string };
 }
 
 interface GithubApiRepo {
@@ -159,6 +194,50 @@ export async function listGithubRepos(): Promise<GithubRepo[]> {
     ownerType: repo.owner.type === 'Organization' ? 'Organization' as const : 'User' as const,
     imported: importedRepos.has(repo.full_name),
   }));
+}
+
+/**
+ * 仓库最近提交，按时间倒序；不传 sha 时返回默认分支的提交。
+ *
+ * fullName 为 owner/repo 全名，白名单校验后拼进路径；
+ * sha 传分支名时返回该分支的提交（分支筛选用，调用方需先校验分支合法）；
+ * 仓库不存在（如手动填写的示例仓库）会抛 GithubError，由调用方回退本地数据。
+ */
+export async function listGithubCommits(
+  fullName: string,
+  limit = DEFAULT_COMMIT_LIMIT,
+  sha?: string,
+): Promise<GithubCommit[]> {
+  assertRepoName(fullName);
+  const shaQuery = sha ? `&sha=${encodeURIComponent(sha)}` : '';
+  const apiCommits = await ghRequest<GithubApiCommit[]>(
+    `/repos/${fullName}/commits?per_page=${Math.min(limit, 100)}${shaQuery}`,
+  );
+  return apiCommits.map((item) => ({
+    hash: item.sha.slice(0, 7),
+    message: item.commit.message.split('\n')[0],
+    author: item.author?.login ?? item.commit.author?.name ?? item.commit.committer?.name ?? '未知',
+    at: item.commit.author?.date ?? item.commit.committer?.date ?? new Date().toISOString(),
+    url: item.html_url,
+  }));
+}
+
+/** 仓库全部分支（GitHub 单页最多返回 100 个，足够覆盖常规仓库）。 */
+export async function listGithubBranches(fullName: string): Promise<GithubBranch[]> {
+  assertRepoName(fullName);
+  const apiBranches = await ghRequest<GithubApiBranch[]>(
+    `/repos/${fullName}/branches?per_page=100`,
+  );
+  return apiBranches.map((branch) => ({
+    name: branch.name,
+    headHash: branch.commit.sha.slice(0, 7),
+  }));
+}
+
+function assertRepoName(fullName: string): void {
+  if (!/^[\w.-]+\/[\w.-]+$/.test(fullName)) {
+    throw new GithubError(`仓库标识「${fullName}」不是 owner/repo 格式`, 0);
+  }
 }
 
 // endregion
