@@ -1,33 +1,29 @@
-// This is a basic Flutter widget test.
-//
-// To perform an interaction with a widget in your test, use the WidgetTester
-// utility in the flutter_test package. For example, you can send tap and scroll
-// gestures. You can also use WidgetTester to find child widgets in the widget
-// tree, read text, and verify that the values of widget properties are correct.
-
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:orbit/data/db.dart';
 import 'package:orbit/main.dart';
-
+import 'package:orbit/pages/calendar_page.dart';
+import 'package:orbit/pages/clock_page.dart';
+import 'package:orbit/pages/settings_page.dart';
 
 void main() {
-  testWidgets('Counter increments smoke test', (WidgetTester tester) async {
-    // Build our app and trigger a frame.
-    await tester.pumpWidget(const MyApp());
+  testWidgets('打卡页默认展示，底部三 Tab 可切换', (WidgetTester tester) async {
+    // 使用内存库，避免测试环境依赖文件系统
+    final db = AppDb.open(':memory:');
+    await tester.pumpWidget(OrbitApp(db: db));
+    await tester.pumpAndSettle();
 
-    // Verify that our counter starts at 0.
-    expect(find.text('0'), findsOneWidget);
-    expect(find.text('1'), findsNothing);
+    // 默认进入打卡页
+    expect(find.byType(ClockPage), findsOneWidget);
 
-    // Tap the '+' icon and trigger a frame.
-    await tester.tap(find.byIcon(Icons.add));
-    await tester.pump();
+    // 切到工作页（假期日历）
+    await tester.tap(find.text('工作'));
+    await tester.pumpAndSettle();
+    expect(find.byType(CalendarPage), findsOneWidget);
 
-    // Verify that our counter has incremented.
-    expect(find.text('0'), findsNothing);
-    expect(find.text('1'), findsOneWidget);
+    // 切到设置页
+    await tester.tap(find.text('设置'));
+    await tester.pumpAndSettle();
+    expect(find.byType(SettingsPage), findsOneWidget);
   });
 }
-
-

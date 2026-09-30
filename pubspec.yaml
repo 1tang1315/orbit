@@ -49,6 +49,8 @@ dependencies:
   home_widget: ^0.10.0
   path_provider: ^2.1.6
   intl: ^0.20.3
+  sqlite3: ^3.5.2
+  path: ^1.9.1
 
 dev_dependencies:
 
